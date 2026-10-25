@@ -1,0 +1,161 @@
+# =====================================================================
+# Phase 2: SLIM Mode Docker Stack (gharchive-lakehouse)
+# Services: PostgreSQL + Apache Airflow (LocalExecutor) + Metabase OSS
+# Pinned image tags verified from official documentation.
+# DO NOT RUN UNTIL DOCKER DESKTOP IS INSTALLED AND RUNNING.
+# =====================================================================
+
+version: "3.8"
+
+networks:
+  lakehouse_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: lakehouse_postgres_data
+  airflow_logs:
+    name: lakehouse_airflow_logs
+  metabase_data:
+    name: lakehouse_metabase_data
+
+services:
+  # -------------------------------------------------------------------
+  # 1. PostgreSQL (Relational Data Warehouse & Airflow Metadata DB)
+  # Plain words: A robust relational database server that stores our
+  # cleaned star schema tables and holds Airflow's internal execution state.
+  # -------------------------------------------------------------------
+  postgres:
+    image: postgres:16.3-alpine
+    container_name: lakehouse_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-lakehouse_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lakehouse_secure_password}
+      POSTGRES_DB: ${POSTGRES_DB:-lakehouse_db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - lakehouse_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lakehouse_user} -d ${POSTGRES_DB:-lakehouse_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # -------------------------------------------------------------------
+  # 2. Airflow DB Init
+  # Plain words: A one-time setup container that migrates the Airflow
+  # database schema and creates the default admin user.
+  # -------------------------------------------------------------------
+  airflow-init:
+    image: apache/airflow:2.9.2-python3.11
+    container_name: lakehouse_airflow_init
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-lakehouse_user}:${POSTGRES_PASSWORD:-lakehouse_secure_password}@postgres:5432/${POSTGRES_DB:-lakehouse_db}
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      _AIRFLOW_DB_MIGRATE: "true"
+      _AIRFLOW_WWW_USER_CREATE: "true"
+      _AIRFLOW_WWW_USER_USERNAME: ${AIRFLOW_ADMIN_USER:-admin}
+      _AIRFLOW_WWW_USER_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD:-admin}
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate &&
+        airflow users create \
+          --username admin \
+          --firstname Hassan \
+          --lastname Mansuri \
+          --role Admin \
+          --email admin@example.com \
+          --password admin || true
+    networks:
+      - lakehouse_net
+
+  # -------------------------------------------------------------------
+  # 3. Airflow Webserver (UI on http://localhost:8080)
+  # Plain words: The browser interface where you can view pipeline DAGs,
+  # inspect run histories, view error logs, and manually trigger jobs.
+  # -------------------------------------------------------------------
+  airflow-webserver:
+    image: apache/airflow:2.9.2-python3.11
+    container_name: lakehouse_airflow_webserver
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-lakehouse_user}:${POSTGRES_PASSWORD:-lakehouse_secure_password}@postgres:5432/${POSTGRES_DB:-lakehouse_db}
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "false"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - airflow_logs:/opt/airflow/logs
+      - ../data:/opt/airflow/data
+    networks:
+      - lakehouse_net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # -------------------------------------------------------------------
+  # 4. Airflow Scheduler (LocalExecutor)
+  # Plain words: The background engine that schedules tasks, checks DAG
+  # dependencies, executes tasks in order, and manages retries on failure.
+  # -------------------------------------------------------------------
+  airflow-scheduler:
+    image: apache/airflow:2.9.2-python3.11
+    container_name: lakehouse_airflow_scheduler
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-lakehouse_user}:${POSTGRES_PASSWORD:-lakehouse_secure_password}@postgres:5432/${POSTGRES_DB:-lakehouse_db}
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - airflow_logs:/opt/airflow/logs
+      - ../data:/opt/airflow/data
+    networks:
+      - lakehouse_net
+    restart: unless-stopped
+
+  # -------------------------------------------------------------------
+  # 5. Metabase OSS (BI Dashboard on http://localhost:3000)
+  # Plain words: An open-source business intelligence tool that lets you
+  # build charts, dashboards, and graphs by querying PostgreSQL directly.
+  # -------------------------------------------------------------------
+  metabase:
+    image: metabase/metabase:v0.49.13
+    container_name: lakehouse_metabase
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    volumes:
+      - metabase_data:/metabase-data
+    networks:
+      - lakehouse_net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped

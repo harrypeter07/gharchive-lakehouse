@@ -32,3 +32,12 @@ Template: ## D-001 | date | topic
 - **Why**: `2024-06-10` was provided as an initial example date in the lab prompt. Testing against a recent 2026 date at the end of Phase 1 provides real-world validation of schema stability (e.g. field renames, label distribution shifts, event volume differences).
 - **Alternatives rejected**: Re-downloading a new date mid-development (would waste bandwidth and invalidate 2.01 GB of verified cache).
 - **Revisit if**: Upstream GH Archive schema changes break extraction on the 2026 date.
+
+## D-004 | 2026-10-25 | Phase 2 SLIM Docker Stack & Pinned Image Versions
+- **Chosen**: SLIM mode Docker stack comprising PostgreSQL, Apache Airflow (LocalExecutor), and Metabase:
+  - PostgreSQL: `postgres:16.3-alpine` (official lightweight Alpine image, https://hub.docker.com/_/postgres)
+  - Apache Airflow: `apache/airflow:2.9.2-python3.11` with LocalExecutor (official Docker Compose guide: https://airflow.apache.org/docs/apache-airflow/2.9.2/howto/docker-compose/index.html)
+  - Metabase: `metabase/metabase:v0.49.13` (official OSS BI image: https://www.metabase.com/docs/v0.49/installation-and-operation/running-metabase-on-docker)
+- **Why**: LocalExecutor runs scheduler and worker in a single process without needing Celery or Redis, conserving ~2 GB RAM. Alpine Postgres minimizes image size and startup latency.
+- **Alternatives rejected**: CeleryExecutor Airflow with Redis (wastes ~1.5 GB RAM locally); heavy Ubuntu-based Postgres images.
+- **Revisit if**: Kafka/Spark streaming is added after Phase 1 and local RAM permits.
