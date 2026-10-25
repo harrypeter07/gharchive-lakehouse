@@ -1,0 +1,22 @@
+# Environment secrets
+.env
+
+# Virtual Environment
+.venv/
+env/
+venv/
+
+# Data and DuckDB files
+data/
+*.duckdb
+*.duckdb.wal
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# OS specific
+.DS_Store
+Thumbs.db
