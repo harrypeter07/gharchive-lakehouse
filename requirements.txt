@@ -1,2 +1,8 @@
-# Pinned project dependencies
+# Pinned dependencies (verified via pip list / pip show on Python 3.11)
 pytest==9.1.1
+python-dotenv==1.2.4
+colorama==0.4.6
+iniconfig==2.3.1
+packaging==26.3
+pluggy==1.7.0
+pygments==2.21.0
