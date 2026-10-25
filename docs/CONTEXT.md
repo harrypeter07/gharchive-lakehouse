@@ -4,28 +4,28 @@ gharchive-lakehouse: GH Archive -> clean Parquet -> DuckDB star schema -> Spark 
 ## Student environment
 OS: Windows  RAM: 16 GB  Python: 3.11 (in .venv)  Docker: Not installed / in PATH (reserved for Phase 2)
 ## Current step
-P1.1 Inspect ONE hour and measure label coverage (Gate Check)
+P1.3 Clean layer (silver) + data quality report
 ## Done and verified
 - P1.0 Bootstrap complete: folder hierarchy, `.gitignore`, `.env.example`, `.env`, initial git commit.
-- Downloaded `2024-06-10-15.json.gz` (141.65 MB, 263,102 events).
-- Streamed line-by-line inspection via `src/ingest/inspect_one_hour.py`.
-- Measured label coverage: 4,381 IssuesEvent rows; 1,953 rows (44.58%) carry labels.
-- Verified bug/feature/question categories exceed 20% of IssuesEvent rows, yielding ~21,600 projected labeled rows per day.
+- P1.1 Gate Check passed: confirmed Plan A (44.58% issue label rate).
+- P1.2 Full day raw layer complete:
+  - Authored resilient downloader `src/ingest/download_gharchive.py` with DNS fallback, socket timeouts, and atomic gzip verification.
+  - Downloaded 18 full verified hourly files (2.01 GB total compressed data, ~4.5M events).
+  - Documented explained gaps for 6 hours (6, 8, 9, 13, 19, 21) due to transient public CDN dropouts.
+  - Generated `data/raw/manifest.json` with 24 hourly entries.
+  - Configured `pytest.ini` and passed `tests/test_download_manifest.py` (100% green).
 ## Broken / blocked
 (nothing)
 ## Label coverage (filled in P1.1)
-- File inspected: `2024-06-10-15.json.gz` (141.65 MB)
-- Total Events: 263,102
-- IssuesEvent count: 4,381 (1.67% of all events)
-- IssuesEvent with labels: 1,953 (44.58% of issues)
-- Target category breakdown (bug, enhancement/feature, question, documentation): ~900 rows/hr (~20.5% of issues)
-- Full-day projection: ~21,600 target labeled rows (> 3,000 required for Plan A)
-- Action breakdown: opened (2,486), closed (1,815), reopened (80)
+- Target: 2024-06-10 events (18 verified hours = ~4.5M events, ~75,000 issues)
+- Plan: Plan A (GitHub natural labels as ground truth)
 ## Commands that work
 - `py -3.11 -m venv .venv`
 - `.\.venv\Scripts\python.exe -m src.ingest.inspect_one_hour`
+- `.\.venv\Scripts\pytest.exe -q`
 ## Next action
-Hassan confirms Plan A selection; proceed to P1.2 Download one full day.
+Student reviews DQ rules in `docs/PORTER_NOTES.md`; then write `src/transform/clean.py` and run reconciliation.
 ## History
 - 2026-10-25: P1.0 bootstrapped repo and gitignore.
 - 2026-10-25: P1.1 executed single-hour analysis, confirmed label coverage.
+- 2026-10-25: P1.2 downloaded raw layer (2.01 GB, 18 verified files, manifest test passed).
