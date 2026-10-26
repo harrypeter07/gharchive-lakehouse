@@ -41,3 +41,9 @@ Template: ## D-001 | date | topic
 - **Why**: LocalExecutor runs scheduler and worker in a single process without needing Celery or Redis, conserving ~2 GB RAM. Alpine Postgres minimizes image size and startup latency.
 - **Alternatives rejected**: CeleryExecutor Airflow with Redis (wastes ~1.5 GB RAM locally); heavy Ubuntu-based Postgres images.
 - **Revisit if**: Kafka/Spark streaming is added after Phase 1 and local RAM permits.
+
+## D-005 | 2026-10-26 | Parquet Storage & In-Memory Analytical Database
+- **Chosen**: `pyarrow==26.0.0` for Parquet columnar dataset serialization and partitioning; `duckdb==2.0.0` for embedded analytical SQL modeling.
+- **Why**: PyArrow is the industry standard for writing partitioned Parquet datasets with type safety and zero-copy performance. DuckDB provides serverless vectorized SQL OLAP capabilities directly on local Parquet files without requiring a database daemon.
+- **Alternatives rejected**: `fastparquet` (slower, less active maintenance); full cloud warehouse for Phase 1.
+- **Revisit if**: Dataset expands beyond single-node memory capacity during distributed scaling.
