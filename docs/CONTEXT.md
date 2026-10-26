@@ -1,50 +1,35 @@
 # CONTEXT (agent keeps this current)
 ## Project
-gharchive-lakehouse: GH Archive -> clean Parquet -> DuckDB star schema -> Spark check -> IR + ML -> Streamlit. Phase 2: Docker (Postgres, Airflow, Metabase).
+gharchive-lakehouse: GH Archive -> clean Parquet -> DuckDB star schema -> Spark check -> IR + ML -> Streamlit -> Docker (Postgres, Airflow, Metabase).
 ## Student environment
-OS: Windows  RAM: 16 GB  Python: 3.11 (in .venv)  Docker: Docker Desktop 29.9.2 running (containers reserved for Phase 2)
+OS: Windows  RAM: 16 GB  Python: 3.11 (in .venv)  Docker: Docker Desktop 29.9.2 running (SLIM mode active)
 ## Current step
-Phase 1 Complete (P1.0 to P1.9 verified). Ready for Phase 2 Docker stack launch.
+Phase 2 Complete: Docker stack launched, DuckDB synchronized to PostgreSQL warehouse, Airflow DAG active, Metabase BI healthy, 23/23 tests passing.
 ## Done and verified
-- P1.0 Bootstrap complete: folder hierarchy, `.gitignore`, `.env.example`, `.env`, initial git commit.
-- P1.1 Gate Check passed: confirmed Plan A (GitHub natural labels as ground truth).
-- P1.2 Full day raw layer complete: 18 verified hours (2.01 GB, ~3.8M events), manifest test passed.
-- P1.3 Clean layer (Silver) complete:
-  - 3,826,476 rows read -> 2,057,052 rows kept -> 1,769,424 rows dropped.
-  - Zero silent drops mathematically asserted (`rows_read == rows_kept + sum(dropped)`).
-  - Hive-style partitioned Parquet written to `data/clean/event_date=2024-06-10/event_type=*/`.
-  - Pseudonymised actors via salted SHA-256 (`actor_hash`).
-- P1.4 Curated layer (Gold DuckDB) complete:
-  - Built `data/lakehouse.duckdb`: `fact_events` (2.05M rows), `dim_repo` (514k), `dim_actor` (483k), `dim_event_type` (6), `dim_date` (1). 0 orphan keys.
-  - Authored & verified 6 analytical queries in `sql/my_queries.sql` and 5 in `sql/agent_queries.sql`.
-- P1.5 PySpark Cross-Engine Reconciliation complete:
-  - Installed `pyspark==3.5.1` and `py4j==0.10.9.7`.
-  - Audited aggregations against DuckDB: exact match across 69,328 starred repos and 108 hourly bins in UTC.
-- P1.6 Information Retrieval (IR) Lab complete:
-  - 80/10/10 disjoint split (13,622 train / 1,702 val / 1,704 test).
-  - Built InvertedIndex (53k vocab), BM25, and Unigram Language Model with Dirichlet smoothing (&mu;=2000).
-  - Trained Multinomial Naive Bayes (75.94% accuracy, 56.22% macro-F1).
-- P1.7 Deep Learning Lab complete:
-  - Authored 1D-CNN architecture (`src/ml/dataset.py`, `src/ml/model.py`, `src/ml/train.py`).
-- P1.8 Streamlit App complete:
-  - Interactive 4-tab UI created in `src/app/main.py`.
-- P1.9 Lab Notebooks & Benchmarks complete:
-  - Interactive notebooks created in `notebooks/ir_lab.ipynb` and `notebooks/dl_lab.ipynb`.
-  - Schema drift tested on `2026-10-24-15` (36,829 events, 80.35% labeled rate, 100% backward-compatible).
-  - Publication-grade guide and vector PDF generated: `docs/GHARCHIVE_LAKEHOUSE_COMPLETE_GUIDE.pdf` (1.26 MB).
-  - All 20 tests passing (`pytest -q`).
+- P1.0 to P1.9: Complete Medallion Lakehouse, zero silent drops (2.05M rows), DuckDB star schema, PySpark cross-engine reconciliation, IR & ML lab, Streamlit app, schema drift test, and complete PDF guide.
+- P2.1 Docker Stack Launch:
+  - `lakehouse_postgres` (`postgres:16.3-alpine`) on port 5432: UP & HEALTHY.
+  - `lakehouse_airflow_init`: Database migrations complete, admin user created.
+  - `lakehouse_airflow_webserver` (`apache/airflow:2.9.2-python3.11`) on port 8080: UP & HEALTHY.
+  - `lakehouse_airflow_scheduler`: UP & ACTIVE (LocalExecutor).
+  - `lakehouse_metabase` (`metabase/metabase:v0.49.13`) on port 3000: UP & HEALTHY.
+- P2.2 Warehouse Export:
+  - Authored `src/warehouse/export_postgres.py` using DuckDB's postgres extension.
+  - Exported: `dim_date` (1), `dim_event_type` (6), `dim_repo` (514k), `dim_actor` (483k), `agg_stars_per_repo_day` (69,326), `agg_events_per_hour` (108), `fact_events` (2,057,052).
+- P2.3 Airflow DAG:
+  - Authored `docker/airflow/dags/gharchive_dag.py` (`gharchive_daily_lakehouse`).
+- P2.4 Testing:
+  - Added `tests/test_phase2_docker.py` verifying container health, Metabase API, and Airflow webserver.
+  - All 23 tests passing (`pytest -q`).
 ## Broken / blocked
 (nothing)
 ## Commands that work
-- `.\.venv\Scripts\pytest.exe -q` (20 passed in 17s)
-- `.\.venv\Scripts\python.exe -m src.transform.clean`
-- `.\.venv\Scripts\python.exe -m src.warehouse.build`
-- `.\.venv\Scripts\python.exe -m src.spark.agg_job`
-- `.\.venv\Scripts\python.exe -m src.ir.evaluate`
-- `.\.venv\Scripts\python.exe -m scripts.generate_guide_pdf`
+- `.\.venv\Scripts\pytest.exe -q` (23 passed in 20s)
+- `.\.venv\Scripts\python.exe -m src.warehouse.export_postgres`
+- `$env:PATH = "C:\Users\ASUS\AppData\Local\Programs\DockerDesktop\resources\bin;" + $env:PATH; docker compose -f docker/docker-compose.yml ps`
 ## Next action
-Begin Phase 2: Start Docker SLIM stack (`docker compose -f docker/docker-compose.yml up -d`) and build automated Airflow DAGs.
+Review Airflow Web UI at http://localhost:8080 and Metabase BI at http://localhost:3000.
 ## History
 - 2026-10-25: P1.0 bootstrapped, P1.1 gate check passed, P1.2 downloaded raw data.
-- 2026-10-26: P1.3 cleaned Parquet silver layer, P1.4 built DuckDB star schema.
-- 2026-10-26: P1.5 reconciled PySpark vs DuckDB, P1.6 evaluated IR and Naive Bayes, P1.7/P1.8/P1.9 completed notebooks, schema drift, Streamlit app, and comprehensive guide PDF.
+- 2026-10-26: P1.3 cleaned Parquet silver layer, P1.4 built DuckDB star schema, P1.5 reconciled PySpark vs DuckDB, P1.6 evaluated IR and Naive Bayes, P1.7/P1.8/P1.9 completed notebooks, schema drift, Streamlit app, and complete PDF guide.
+- 2026-10-26: Phase 2 launched: Docker containers healthy, 2.05M records synchronized to PostgreSQL serving layer, Airflow DAG scheduled, Metabase online.
