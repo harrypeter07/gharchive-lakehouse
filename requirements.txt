@@ -8,3 +8,5 @@ pluggy==1.7.0
 pygments==2.21.0
 pyarrow==26.0.0
 duckdb==2.0.0
+pyspark==3.5.1
+py4j==0.10.9.7
