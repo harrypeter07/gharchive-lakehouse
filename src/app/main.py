@@ -11,7 +11,14 @@ Features:
 from collections import Counter
 import json
 import math
+import sys
 from pathlib import Path
+
+# Ensure project root is in sys.path when running via 'streamlit run'
+PROJECT_ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT_DIR))
+
 import re
 import time
 import duckdb
