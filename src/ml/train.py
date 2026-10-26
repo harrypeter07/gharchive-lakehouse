@@ -127,6 +127,12 @@ def train_cnn(epochs: int = 4, batch_size: int = 64) -> Dict[str, Any]:
         if "## 3. Deep Learning: 1D-CNN Classifier" not in existing:
             results_path.write_text(existing + dl_summary, encoding="utf-8")
 
+    # Save trained PyTorch model and vocabulary
+    import json
+    torch.save(model.state_dict(), CURATED_DATA_DIR / "cnn_weights.pt")
+    with open(CURATED_DATA_DIR / "vocab.json", "w", encoding="utf-8") as f:
+        json.dump(vocab.token2id, f)
+
     return {
         "accuracy": round(accuracy, 4),
         "macro_f1": round(macro_f1, 4),
