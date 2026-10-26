@@ -18,3 +18,9 @@ Format: **Term**: plain meaning. Example from this project.
 - **Reconciliation**: A mathematical audit check verifying that the number of incoming records equals the number of outgoing records plus every dropped record (`rows_read == rows_kept + sum(dropped)`). Example: `DQCounter.assert_reconciles()`.
 - **Fixture**: Hand-crafted, predictable sample data used in unit tests to verify that code handles valid data, edge cases, and corrupt records correctly. Example: `tests/fixtures/sample_events.jsonl`.
 - **Reason Code**: A standardized text token recording why a specific record was rejected, ensuring no data is dropped silently. Example: `DROP_BOT = "BOT_ACTOR"` in `src/transform/reasons.py`.
+- **Star Schema**: A relational warehouse design with a central fact table surrounded by dimension tables, optimizing analytical queries (OLAP) and simplifying joins. Example: `fact_events` surrounded by `dim_repo`, `dim_actor`, `dim_event_type`, and `dim_date`.
+- **Fact Table**: A table containing quantitative measurements, transactional occurrences, or event records with a defined grain. Example: `fact_events` where each row represents one distinct GitHub event.
+- **Dimension Table**: A table containing descriptive, contextual attributes that filter, group, or categorize fact measurements. Example: `dim_repo` storing `repo_name` and `repo_owner`.
+- **Primary Key (PK)**: A column or set of columns uniquely identifying every individual record in a table. Example: `event_id` in `fact_events`.
+- **Foreign Key (FK)**: A column in a table referencing the primary key of another table, guaranteeing referential integrity. Example: `repo_key` in `fact_events` pointing to `dim_repo.repo_key`.
+- **Surrogate Key**: An artificial, system-generated integer key assigned to dimension records, decoupling the warehouse from external natural IDs. Example: `repo_key` (1, 2, 3...) in `dim_repo`.
