@@ -8,6 +8,7 @@ from src.common.config import DATA_DIR, PROJECT_ROOT
 
 DB_PATH = DATA_DIR / "lakehouse.duckdb"
 AGENT_QUERIES_PATH = PROJECT_ROOT / "sql" / "agent_queries.sql"
+MY_QUERIES_PATH = PROJECT_ROOT / "sql" / "my_queries.sql"
 
 
 def test_star_schema_tables_and_row_counts() -> None:
@@ -68,19 +69,40 @@ def test_primary_key_uniqueness() -> None:
     con.close()
 
 
+def _extract_queries(file_path: Path) -> list:
+    """Read SQL file and split on semicolons while stripping comment-only lines."""
+    with open(file_path, "r", encoding="utf-8") as f:
+        lines = [line for line in f if not line.strip().startswith("--")]
+    content = "".join(lines)
+    return [q.strip() for q in content.split(";") if q.strip()]
+
+
 def test_agent_queries_execute_successfully() -> None:
     """Verify that all queries in sql/agent_queries.sql execute cleanly."""
     con = duckdb.connect(str(DB_PATH), read_only=True)
-    with open(AGENT_QUERIES_PATH, "r", encoding="utf-8") as f:
-        sql_text = f.read()
+    queries = _extract_queries(AGENT_QUERIES_PATH)
 
-    # Split on semicolon to execute each query
-    queries = [q.strip() for q in sql_text.split(";") if q.strip()]
     for idx, query in enumerate(queries, start=1):
         try:
             results = con.execute(query).fetchall()
             assert isinstance(results, list), f"Query {idx} did not return a list"
         except Exception as e:
             pytest.fail(f"Agent query {idx} failed with error: {e}")
+
+    con.close()
+
+
+def test_my_queries_execute_successfully() -> None:
+    """Verify that all guided queries in sql/my_queries.sql execute cleanly."""
+    con = duckdb.connect(str(DB_PATH), read_only=True)
+    queries = _extract_queries(MY_QUERIES_PATH)
+    assert len(queries) >= 6, f"Expected at least 6 queries in my_queries.sql, found {len(queries)}"
+
+    for idx, query in enumerate(queries, start=1):
+        try:
+            results = con.execute(query).fetchall()
+            assert isinstance(results, list), f"Query {idx} did not return a list"
+        except Exception as e:
+            pytest.fail(f"My query {idx} failed with error: {e}")
 
     con.close()
