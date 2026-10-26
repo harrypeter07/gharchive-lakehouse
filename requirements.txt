@@ -10,3 +10,4 @@ pyarrow==26.0.0
 duckdb==2.0.0
 pyspark==3.5.1
 py4j==0.10.9.7
+streamlit==1.66.1
