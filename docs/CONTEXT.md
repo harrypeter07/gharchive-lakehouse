@@ -4,7 +4,7 @@ gharchive-lakehouse: GH Archive -> clean Parquet -> DuckDB star schema -> Spark 
 ## Student environment
 OS: Windows  RAM: 16 GB  Python: 3.11 (in .venv)  Docker: Docker Desktop (SLIM mode configured)
 ## Current step
-Added prominent model response verdict banner with exact percentage metric cards, comparison table, and 'What Are We Doing Here?' overview to deep_learning.py; pushed commit 3671374 to GitHub.
+Organized Deep Learning practicals into topic-wise tabs with real PyTorch code snippets and explanations in deep_learning.py and regenerated Slide 4 in DL_PRESENTATION_SLIDES_AND_GUIDE.pdf (1.13 MB); pushed commit a7412e3 to GitHub.
 ## Done and verified
 - P1.0 to P1.9: Medallion Lakehouse, zero silent drops (2.05M rows), DuckDB star schema, PySpark cross-engine reconciliation, IR & ML lab, Streamlit app, schema drift test, and master PDF guide.
 - P2.1 to P2.4: Docker stack (PostgreSQL, Airflow, Metabase) running locally, DuckDB to PostgreSQL sync (2.05M rows), Airflow DAG active, 27 integration tests.
