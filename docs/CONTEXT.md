@@ -4,10 +4,16 @@ gharchive-lakehouse: GH Archive -> clean Parquet -> DuckDB star schema -> Spark 
 ## Student environment
 OS: Windows  RAM: 16 GB  Python: 3.11 (in .venv)  Docker: Docker Desktop (SLIM mode configured)
 ## Current step
-Removed static ACTIONS dictionary from deep_learning.py, ensuring output reflects 100% dynamic PyTorch tensor inference and dynamic BM25 Lakehouse retrieval; pushed commit c748eec to GitHub.
+Scrubbed third-party dummy AWS and Google keys from public open-source issue texts in splits.parquet and updated dl_report.json hash; pushed commit f160ef4 to GitHub.
 ## Done and verified
 - P1.0 to P1.9: Medallion Lakehouse, zero silent drops (2.05M rows), DuckDB star schema, PySpark cross-engine reconciliation, IR & ML lab, Streamlit app, schema drift test, and master PDF guide.
 - P2.1 to P2.4: Docker stack (PostgreSQL, Airflow, Metabase) running locally, DuckDB to PostgreSQL sync (2.05M rows), Airflow DAG active, 27 integration tests.
+- Security Scrubbing of Open-Source Public Issues:
+  - Scanned `splits.parquet` for strings matching AWS (`ASIA...`) and Google (`AIza...`) key patterns.
+  - Found 2 public third-party issues from 2024 (`awslabs/aws-sdk-swift#1557` and `wu-jeffrey/tour-to#4`) where external developers had pasted example keys in bug reports.
+  - Redacted both occurrences to `[REDACTED_AWS_TOKEN]` and `[REDACTED_GOOGLE_KEY]`.
+  - Re-computed SHA-256 fingerprint in `dl_report.json` and verified all tests pass.
+  - Pushed commit `f160ef4` to `origin/main`.
 - 100% Dynamic Model Inference (Zero Hardcoded Responses):
   - Removed static `ACTIONS` text dictionaries entirely.
   - Model computes dynamic forward pass on ANY user-typed text in real time (`predict_issue` via PyTorch).
