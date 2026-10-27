@@ -8,6 +8,7 @@ import streamlit as st
 
 from src.app.resources import load_cnn_model, load_ir_and_nb_models
 from src.common.config import CURATED_DATA_DIR
+from src.ir.bm25 import BM25Ranker
 from src.ml.inference import predict_issue
 from src.ml.train import fingerprint
 
@@ -55,8 +56,27 @@ ICONS = {
     'question': '❓ Question'
 }
 
+ACTIONS = {
+    'bug': (
+        '🔴 Maintainer Action: Defect Verification & Bug Queue',
+        'Route this ticket to engineering and QA. Mark with high triage priority, reproduce using the reported error logs or stack trace, and check the lakehouse index for duplicate reports.'
+    ),
+    'enhancement': (
+        '🟢 Maintainer Action: Feature Backlog & Architecture Review',
+        'Route this ticket to product backlog. Review API compatibility and feasibility, and request an architectural design proposal.'
+    ),
+    'documentation': (
+        '🔵 Maintainer Action: Docs Team & Contributor Queue',
+        'Label as `good-first-issue` or `documentation`. Point to the relevant README or guide markdown file, and invite open-source community contributors to submit a pull request.'
+    ),
+    'question': (
+        '🟡 Maintainer Action: Developer Support & Forum Redirection',
+        'Provide quick configuration guidance or redirect the user to GitHub Discussions / community forum. Close ticket to keep the engineering bug tracker actionable.'
+    )
+}
 
-def show_prediction(result: dict, nb, text: str) -> None:
+
+def show_prediction(result: dict, nb, text: str, index=None) -> None:
     """Display every output class and the captured model shapes."""
     pred = result['prediction'].lower()
     pred_display = ICONS.get(pred, pred.capitalize())
@@ -87,6 +107,43 @@ def show_prediction(result: dict, nb, text: str) -> None:
         is_winner = (cat_key == pred)
         delta_str = "Selected" if is_winner else None
         m_cols[i].metric(label=icon_label, value=f"{prob_val:.1%}", delta=delta_str)
+
+    # 3. Actionable Triage Recommendation (What to do next)
+    action_title, action_desc = ACTIONS.get(pred, ACTIONS['bug'])
+    st.markdown(f"""
+    <div style="background-color: #142139; border-left: 4px solid #46c6ef; border-radius: 4px; padding: 10px 14px; margin: 10px 0 14px 0;">
+        <div style="font-weight: 700; color: #46c6ef; font-size: 9.5pt;">{action_title}</div>
+        <div style="font-size: 8.5pt; color: #cbd5e1; margin-top: 2px;">{action_desc}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 4. Search Similar Past Issues in Lakehouse Index
+    if index:
+        with st.expander('🔎 Search Real Similar Issues & Fixes in Lakehouse Index', expanded=False):
+            ranker = BM25Ranker(index, k1=1.5, b=0.75)
+            results = ranker.score_query(text, top_k=3)
+            if results:
+                st.caption(f'Retrieved top {len(results)} matching real GitHub issues from our indexed 8,000 Lakehouse records:')
+                for rank, (doc_id, score) in enumerate(results, 1):
+                    meta = index.doc_metadata.get(doc_id, {})
+                    lbl = meta.get('label', 'issue')
+                    lbl_badge = ICONS.get(lbl, lbl.capitalize())
+                    st.markdown(f"""
+                    <div style="background-color: #0b1222; border: 1px solid #293a56; border-radius: 6px; padding: 10px; margin-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 700; color: #e8f0ff; font-size: 9.5pt;">#{rank}. {meta.get('title', 'Untitled')}</span>
+                            <span style="background: #1e293b; color: #46c6ef; font-size: 8pt; padding: 2px 6px; border-radius: 4px;">{lbl_badge}</span>
+                        </div>
+                        <div style="font-size: 8pt; color: #94a3b8; margin: 3px 0;">
+                            <b>Repo:</b> <code>{meta.get('repo_name', 'N/A')}</code> &bull; <b>Issue #:</b> {meta.get('issue_number', 'N/A')} &bull; <b>BM25 Relevance:</b> {score:.2f}
+                        </div>
+                        <div style="font-size: 8.5pt; color: #cbd5e1; margin-top: 3px;">
+                            {str(meta.get('body', 'No body text'))[:180]}...
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.info('No similar issues found in the indexed lakehouse records.')
 
     left, right = st.columns([3, 2])
     with left, st.container(border=True):
@@ -183,8 +240,8 @@ def render() -> None:
             st.warning(str(error))
     saved = st.session_state.get('prediction')
     if saved and saved[0] == text:
-        _, nb, _ = load_ir_and_nb_models()
-        show_prediction(saved[1], nb, text)
+        index, nb, _ = load_ir_and_nb_models()
+        show_prediction(saved[1], nb, text, index=index)
     elif saved:
         st.info('Input changed. Click Classify issue to update the output.')
     if report:
