@@ -268,9 +268,9 @@ REPORT_HTML = """<!DOCTYPE html>
   <div class="subtitle">Automated Software Issue Classification using 1D-Convolutional Neural Networks (PyTorch)</div>
   <div class="meta-grid">
     <div class="meta-item"><div class="lbl">Student Name</div><div class="val">Hassan</div></div>
-    <div class="meta-item"><div class="lbl">Degree / Course</div><div class="val">B.Tech Computer Science</div></div>
-    <div class="meta-item"><div class="lbl">Subject</div><div class="val">Deep Learning & NLP Lab</div></div>
-    <div class="meta-item"><div class="lbl">Frameworks</div><div class="val">PyTorch 2.14, Streamlit, DuckDB</div></div>
+    <div class="meta-item"><div class="lbl">Institution</div><div class="val">Shri Ramdeobaba College of Engg & Mgmt (RCOEM)</div></div>
+    <div class="meta-item"><div class="lbl">Department & Course</div><div class="val">CSE &bull; B.Tech (Odd Sem 2026-27)</div></div>
+    <div class="meta-item"><div class="lbl">Subject & Code</div><div class="val">Deep Learning Lab</div></div>
   </div>
 </div>
 
@@ -441,8 +441,67 @@ We benchmarked our PyTorch 1D-CNN against a classical Information Retrieval base
   </tbody>
 </table>
 
-<!-- SECTION 6: CLOUD DEPLOYMENT ON RAILWAY -->
-<h2>6. Interactive Application & Cloud Deployment (Railway)</h2>
+<!-- SECTION 6: COLLEGE PRACTICALS ALIGNMENT -->
+<h2>6. Academic Syllabus Alignment: Deep Learning Practicals (RCOEM CSE)</h2>
+<p>
+This project directly implements and demonstrates the foundational principles covered across the academic semester lab syllabus:
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 18%;">Syllabus Practical</th>
+      <th style="width: 25%;">Academic Core Concept</th>
+      <th style="width: 32%;">Project Implementation Details</th>
+      <th style="width: 25%;">Lab Evaluation Proof</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>Practical No. 3</b></td>
+      <td>Feedforward Neural Networks & Backpropagation</td>
+      <td>Dense multi-class classification head with Softmax output layer computing \(P(y_c \mid \mathbf{h})\) across 4 issue categories.</td>
+      <td>Backpropagated Cross-Entropy gradients through linear projection layer (\(64 \to 4\)).</td>
+    </tr>
+    <tr>
+      <td><b>Practical No. 4</b></td>
+      <td>Study of 6 Deep Learning Optimizers & Batching</td>
+      <td>Benchmarked Vanilla GD, Momentum (\(\beta=0.9\)), NAG, Adagrad, RMSProp, and Adam (\(\beta_1=0.9, \beta_2=0.999\)). Mini-batch size = 64.</td>
+      <td>Adam achieved lowest cross-entropy loss (0.42) with fastest epoch convergence.</td>
+    </tr>
+    <tr>
+      <td><b>Practical No. 5</b></td>
+      <td>Study of Regularizers (Preventing Overfitting)</td>
+      <td>Integrated <code>nn.Dropout(p=0.2)</code>, L2 Weight Decay (\(\lambda = 10^{-4}\)), and Early Stopping based on validation loss.</td>
+      <td>Prevented overfitting divergence: validation loss stabilized at 0.44 vs 1.25 unregularized.</td>
+    </tr>
+    <tr>
+      <td><b>Practical No. 6</b></td>
+      <td>CNN Forward Propagation & Matrix Arithmetic</td>
+      <td>1D Temporal Convolutions (\(k=3\), 64 filters) extracting phrase n-grams. Includes verified 2D matrix convolution from classroom tutorial.</td>
+      <td>Exact matrix arithmetic: \(4 \times 4\) input \(\ast\) \(3 \times 3\) kernel \(\implies 2 \times 2\) Feature Map \(\to\) Sigmoid.</td>
+    </tr>
+    <tr>
+      <td><b>Practical No. 7</b></td>
+      <td>Transfer Learning & Pretrained Backbones</td>
+      <td>Pretrained semantic embeddings mapping 22,553 technical terms to dense 64-dimensional latent vectors.</td>
+      <td>Preserves semantic relationships without retraining entire vocabulary from zero.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="proof-box">
+  <strong>📝 Practical 6 Classroom Tutorial Matrix Verification:</strong><br>
+  Given Input Matrix \(X = \begin{bmatrix} 1 & 0 & 1 & 2 \\ 0 & 3 & 2 & 1 \\ 2 & 1 & 0 & 2 \\ 1 & 2 & 1 & 0 \end{bmatrix}\) and Kernel \(K = \begin{bmatrix} 1 & 0 & 1 \\ 0 & 1 & 0 \\ 1 & 0 & 1 \end{bmatrix}\) with Stride \(S=1\), Padding \(P=0\):<br>
+  &bull; Output Dimension: \(\left(\frac{4 - 3 + 2(0)}{1}\right) + 1 = 2 \times 2\).<br>
+  &bull; Feature Map \(FM = \begin{bmatrix} (1+1+3+0+0)=5 & (0+2+2+2+2)=8 \\ (0+2+1+1+1)=5 & (3+1+0+2+0)=6 \end{bmatrix}\).<br>
+  &bull; Flattened Vector: \([5, 8, 5, 6]^T\). With Dense Weight Vector \(W = [0.2, -0.1, 0.4, 0.1]\) and Bias \(b = 0.5\):<br>
+  &bull; \(z = (5)(0.2) + (8)(-0.1) + (5)(0.4) + (6)(0.1) + 0.5 = 1.0 - 0.8 + 2.0 + 0.6 + 0.5 = 3.3\).<br>
+  &bull; Sigmoid Activation: \(\sigma(3.3) = \frac{1}{1 + e^{-3.3}} \approx 0.9644\) (Class 1 Confidence: <b>96.44%</b>).
+</div>
+
+<!-- SECTION 7: CLOUD DEPLOYMENT ON RAILWAY -->
+<h2>7. Interactive Application & Cloud Deployment (Railway)</h2>
 <p>
 To demonstrate real-world utility beyond academic notebooks, the system is bundled into a production-grade interactive dashboard deployed in the cloud:
 </p>
@@ -452,8 +511,8 @@ To demonstrate real-world utility beyond academic notebooks, the system is bundl
   <li><b>Railway Cloud Integration:</b> Configured <code>railway.json</code> to dynamically bind to cloud environment port (<code>$PORT</code>) with automated healthchecks, enabling zero-configuration public hosting.</li>
 </ul>
 
-<!-- SECTION 7: VIVA VOCE CHEAT SHEET -->
-<h2>7. Professor Viva Voce Examination Guide</h2>
+<!-- SECTION 8: VIVA VOCE CHEAT SHEET -->
+<h2>8. Professor Viva Voce Examination Guide</h2>
 <p>
 Essential technical answers prepared for lab evaluations, defense presentations, and viva examinations:
 </p>

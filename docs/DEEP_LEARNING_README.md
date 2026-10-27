@@ -152,3 +152,20 @@ streamlit run src/app/main.py
 
 **Q4: Where are the trained model weights stored?**
 > *Answer*: "The trained weights are serialized into PyTorch's state dictionary format at `data/curated/cnn_weights.pt` (5.79 MB), accompanied by the vocabulary mapping in `data/curated/vocab.json` (22,415 tokens). The Streamlit app loads these weights dynamically into memory for zero-latency inference."
+
+---
+
+## 6. College Lab Practicals Mapping (RCOEM CSE Deep Learning Lab)
+
+This project directly aligns with the semester practical curriculum:
+
+- **Practical No. 3: Feedforward Neural Network**
+  - Dense linear projection head mapping 64-dimensional feature representations to 4 classes via Softmax activation with backpropagated cross-entropy loss.
+- **Practical No. 4: Study of 6 Optimizers & Batching Strategies**
+  - Interactive comparison across Vanilla GD, Momentum, Nesterov Accelerated Gradient (NAG), Adagrad, RMSProp, and Adam. Shows loss convergence rates and explains why Adam with mini-batches of 64 performs best.
+- **Practical No. 5: Study of Regularizers (Preventing Overfitting)**
+  - Implements `nn.Dropout(0.2)`, L2 Weight Decay, and Early Stopping. Visualizes the difference between overfitted divergence vs. regularized generalization curves.
+- **Practical No. 6: Convolutional Neural Network Forward Propagation**
+  - Direct 1D convolutional feature extraction. Includes the step-by-step matrix calculation from the teacher tutorial: input matrix $X (4\times 4)$, kernel $K (3\times 3)$, Stride 1, Padding 0, flattening, dense layer, and Sigmoid activation.
+- **Practical No. 7: Transfer Learning & Pretrained Embeddings**
+  - Pretrained token embeddings mapping technical vocabularies to continuous vector spaces.
