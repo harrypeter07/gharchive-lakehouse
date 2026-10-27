@@ -1,148 +1,263 @@
-# System Architecture & Technical Specification
+# System Architecture and Technical Specification
 ## Automated GitHub Issue Classification Engine via 1D-Convolutional Neural Networks
-**Lead Engineer / Author:** Hassan  
-**Affiliation:** Department of Computer Science & Engineering, Shri Ramdeobaba College of Engineering and Management (RCOEM)  
+
+**Author:** Hassan  
+**Affiliation:** Department of Computer Science and Engineering, Shri Ramdeobaba College of Engineering and Management (RCOEM)  
 **System Repository:** https://github.com/harrypeter07/gharchive-lakehouse  
 **Live Production Host:** https://gharchive.up.railway.app  
 
 ---
 
-## 1. Executive Summary & Author Profile
+## 1. Executive Summary and Profile
 
-In modern distributed software engineering, open-source repositories receive tens of thousands of developer tickets, crash reports, and feature requests every hour. Manually triaging incoming reports is labor-intensive, creating backlogs that delay critical bug patches and architectural improvements.
+This platform provides an automated triage and categorization system for high-volume open-source software repositories. Software issues ingested from streaming GitHub Archive data are processed through an analytical lakehouse and classified into four operational categories in real time:
 
-This project delivers an end-to-end, high-throughput automated classification platform. Incoming software issue tickets are ingested from streaming GitHub Archive data, cleaned through a zero-loss analytical lakehouse, and categorized in real time into four operational classes:
-- **Bug**: Functional defects, segmentation faults, memory leaks, and runtime errors.
-- **Enhancement**: Feature proposals, architectural requests, and performance optimizations.
-- **Documentation**: Typo corrections, API documentation updates, and tutorial enhancements.
-- **Question**: Configuration guidance, deployment inquiries, and general usage questions.
+- **Bug:** Functional defects, memory faults, crashes, and exceptions.
+- **Enhancement:** Feature requests, performance improvements, and architectural proposals.
+- **Documentation:** README updates, API reference changes, and tutorial additions.
+- **Question:** Usage inquiries, environment setup, and configuration guidance.
 
-Rather than relying on brittle keyword rules or heavy generative models with prohibitive computational requirements, the core inference engine utilizes a custom-trained **PyTorch 1D-Convolutional Neural Network (IssueCNN)**. The system achieves **77.15% overall accuracy** and **62.34% Macro-F1** with a sub-2 millisecond inference latency on commodity CPU hardware.
+The core inference engine uses a custom-trained **PyTorch 1D-Convolutional Neural Network (IssueCNN)**. It achieves **77.15% overall accuracy** and **62.34% Macro-F1** with an average CPU inference latency of **1.8 milliseconds** and a model footprint of **5.19 MB**.
 
 ---
 
-## 2. Deep Learning Pipeline & Model Architecture
+## 2. End-to-End System Pipeline
 
-While standard 2D Convolutional Neural Networks operate across spatial dimensions (height and width pixels), our architecture applies **1D temporal convolutions over dense word embeddings**, capturing local n-gram semantic patterns across variable-length technical text.
+The diagram below outlines the end-to-end data processing workflow from public event stream to user interface:
 
 ```
-[Raw Issue Title & Description]
-             │
-             ▼
-   1. Tokenization & Sequence Standardization (L = 50 tokens)
-             │
-             ▼
-   2. Embedding Layer (Vocabulary = 20,075 -> Dimension = 64)
-             │
-             ▼
-   3. 1D Convolution (64 Filters, Kernel Size = 3, Padding = 1)
-             │
-             ▼
-   4. Non-Linear Activation (Rectified Linear Unit - ReLU)
-             │
-             ▼
-   5. Global Max-Over-Time Pooling (Extracts Dominant Feature Vector -> [1, 64])
-             │
-             ▼
-   6. Dropout Regularization (p = 0.2 during training)
-             │
-             ▼
-   7. Dense Linear Head & Softmax (Projects [1, 64] -> 4 Class Probabilities)
++-------------------------------------------------------------------------+
+|                         GH ARCHIVE EVENT STREAM                         |
+|             Raw hourly public event archives (data.gharchive.org)       |
++-------------------------------------------------------------------------+
+                                     |
+                                     v  [src/ingest/download_gharchive.py]
++-------------------------------------------------------------------------+
+|                              BRONZE LAYER                               |
+|        Gzip-compressed JSON event streams (schema-on-read validation)   |
++-------------------------------------------------------------------------+
+                                     |
+                                     v  [src/ingest/clean_raw.py]
++-------------------------------------------------------------------------+
+|                              SILVER LAYER                               |
+|       Partitioned Snappy Parquet files with deduplication audit         |
++-------------------------------------------------------------------------+
+                                     |
+                                     v  [src/storage/schema.py]
++-------------------------------------------------------------------------+
+|                               GOLD LAYER                                |
+|        DuckDB Star Schema (fact_events, dim_repos, dim_actors)          |
++-------------------------------------------------------------------------+
+                                     |
+                  +------------------+------------------+
+                  |                                     |
+                  v [src/ml/train.py]                   v [src/search/ranker.py]
++-----------------------------------+ +-----------------------------------+
+|       DEEP LEARNING ENGINE        | |       LAKEHOUSE RETRIEVAL         |
+|  IssueCNN PyTorch Model           | |  BM25 In-Memory Index             |
+|  1,297,412 Parameters             | |  8,000 Curated Lakehouse Issues   |
+|  Dynamic 4-Class Probability Head | |  Similar Historical Resolutions   |
++-----------------------------------+ +-----------------------------------+
+                  |                                     |
+                  +------------------+------------------+
+                                     |
+                                     v
++-------------------------------------------------------------------------+
+|                       STREAMLIT MODULAR WEB APP                         |
+|             Interactive UI running on Railway Cloud Infrastructure      |
++-------------------------------------------------------------------------+
 ```
 
-### Layer-by-Layer Mathematical Formulation
+---
 
-1. **Tokenization and Embedding Lookup:**
-   Input text is tokenized into integer indices $x = (w_1, w_2, \dots, w_L)$ truncated or padded to a fixed sequence length $L = 50$. Each token index maps to a 64-dimensional dense semantic vector via an embedding matrix $E \in \mathbb{R}^{|V| \times d}$, where $|V| = 20,075$ and $d = 64$:
-   $$X = \text{Embedding}(x) \in \mathbb{R}^{L \times d}$$
+## 3. Deep Learning Neural Pipeline and Code Implementation
 
-2. **1D Convolution (Temporal Phrase Scanning):**
-   The embedded representation is transposed to $\mathbb{R}^{d \times L}$. We define 64 convolutional filters $W^{(j)} \in \mathbb{R}^{k \times d}$ with kernel size $k = 3$ (scanning 3-word windows). For each position $t \in [1, L]$:
-   $$c_t^{(j)} = \text{ReLU}\left( \sum_{i=1}^{k} \langle W_i^{(j)}, X_{t+i-1} \rangle + b^{(j)} \right)$$
+### 3.1 Tensor Transformation Diagram
 
-3. **Global Max-Over-Time Pooling:**
-   To make classification position-invariant (so that critical indicators like *"fatal segmentation fault"* are detected regardless of sentence placement), the model extracts the maximum activation per filter:
-   $$\hat{c}^{(j)} = \max_{1 \le t \le L} c_t^{(j)} \quad \implies \quad \mathbf{h} = [\hat{c}^{(1)}, \hat{c}^{(2)}, \dots, \hat{c}^{(64)}]^T \in \mathbb{R}^{64}$$
+The model processes text through a sequence of deterministic matrix operations. Below is the exact tensor dimension transformation from raw input string to class probabilities:
 
-4. **Dropout Regularization:**
-   During training, a Bernoulli dropout mask zeroes out 20% of the pooled feature dimensions ($p=0.2$):
-   $$\mathbf{\tilde{h}} = \mathbf{r} \odot \mathbf{h}, \quad r_i \sim \text{Bernoulli}(1 - p)$$
+```
+Input Text: "Panic: index out of bounds in parser loop"
+   |
+   |  [src/ir/index.py -> tokenize()]
+   |  Regex tokenization: re.findall(r"\b[a-z0-9_]{2,}\b", text.lower())
+   v
+Token IDs: Vector of length L = 50, padded with 0
+   Shape: [1, 50]
+   |
+   |  [src/ml/model.py -> nn.Embedding(20075, 64, padding_idx=0)]
+   |  Each token mapped to a learned 64-dimensional dense vector
+   v
+Embedding Matrix
+   Shape: [1, 50, 64]
+   |
+   |  [src/ml/model.py -> x.transpose(1, 2)]
+   |  Transposed to channel-first format for 1D convolution
+   v
+Transposed Tensor
+   Shape: [1, 64, 50]
+   |
+   |  [src/ml/model.py -> nn.Conv1d(in_channels=64, out_channels=64, kernel_size=3, padding=1)]
+   |  64 filters slide across 3-word windows (trigrams)
+   v
+Feature Map
+   Shape: [1, 64, 50]
+   |
+   |  [src/ml/model.py -> nn.ReLU()]
+   |  Non-linear activation: max(0, x)
+   v
+Rectified Feature Map
+   Shape: [1, 64, 50]
+   |
+   |  [src/ml/model.py -> torch.max(..., dim=2)[0]]
+   |  Global max-over-time pooling extracts strongest signal per filter
+   v
+Pooled Feature Vector
+   Shape: [1, 64]
+   |
+   |  [src/ml/model.py -> nn.Dropout(p=0.2)]
+   |  Randomly zeroes 20% of activations during training (identity at inference)
+   v
+Regularized Latent Vector
+   Shape: [1, 64]
+   |
+   |  [src/ml/model.py -> nn.Linear(in_features=64, out_features=4)]
+   |  Dense projection to four class logits
+   v
+Raw Logits
+   Shape: [1, 4]
+   |
+   |  [src/ml/inference.py -> torch.softmax(dim=1)]
+   |  Normalizes logits into sum-to-one probabilities
+   v
+Output Probabilities: [Bug, Enhancement, Documentation, Question]
+   Shape: [1, 4]
+```
 
-5. **Linear Projection & Softmax Head:**
-   The regularized vector is projected into 4 operational logits via a linear layer $W_c \in \mathbb{R}^{4 \times 64}, b_c \in \mathbb{R}^4$:
-   $$\mathbf{z} = W_c \mathbf{\tilde{h}} + b_c$$
-   $$\hat{y}_c = P(y = c \mid x) = \frac{\exp(z_c)}{\sum_{k=1}^4 \exp(z_k)}, \quad c \in \{1, 2, 3, 4\}$$
+### 3.2 Code Component Mapping
+
+The implementation is structured across modular, test-covered Python files:
+
+- **`src/ir/index.py` (`tokenize`):**
+  Extracts lowercase alphanumeric tokens using regular expressions. Strips punctuation while preserving compound technical identifiers.
+
+- **`src/ml/dataset.py` (`IssueVocabulary`):**
+  Maintains the token-to-index mapping. Sets `<pad> = 0` and `<unk> = 1`. Discards terms with frequency less than 2, resulting in a vocabulary size of 20,075 words.
+
+- **`src/ml/model.py` (`IssueCNN`):**
+  Defines the PyTorch `nn.Module` with `nn.Embedding`, `nn.Conv1d`, `nn.ReLU`, `torch.max`, `nn.Dropout`, and `nn.Linear`. Parameter count is calculated as:
+  - Embedding: $20,075 \times 64 = 1,284,800$ weights.
+  - Conv1d: $(64 \times 3 \times 64) + 64 = 12,352$ weights and biases.
+  - Linear Head: $(64 \times 4) + 4 = 260$ weights and biases.
+  - Total Parameters: **1,297,412**.
+
+- **`src/ml/train.py` (`train_epoch`):**
+  Executes mini-batch gradient descent using the Adam optimizer (`lr=0.001`, `weight_decay=1e-4`) and class-weighted cross-entropy loss.
+
+- **`src/ml/inference.py` (`predict_issue`):**
+  Runs CPU-optimized forward inference, measures execution duration via `time.perf_counter_ns()`, and captures layer output shapes in a diagnostic trace.
+
+- **`src/search/ranker.py` (`BM25Ranker`):**
+  Indexes 8,000 Lakehouse issue records using the Okapi BM25 ranking function ($k_1 = 1.5, b = 0.75$) to return relevant historical issues alongside model predictions.
 
 ---
 
-## 3. Dataset Engineering & Zero-Leakage Audit
+## 4. Dataset Engineering and Split Isolation
 
-The model was trained on real open-source issue activity from GitHub Archive. To maintain academic and industrial integrity, the raw stream was subjected to a comprehensive deduplication and split-isolation audit:
+To prevent data contamination, all records were subjected to a deduplication audit before partitioning:
 
-- **Raw Stream Ingestion:** Extracted from hourly GH Archive event dumps.
-- **Deduplication Audit:** Identified and removed 551 duplicate issue identities and 507 identical token sequences across event timestamps.
-- **Final Cleaned Dataset:** **14,780 unique issues**.
-- **Split Partitions:**
-  - **Training Set (80%):** 11,823 samples (used exclusively for gradient optimization).
-  - **Validation Set (10%):** 1,478 samples (used for checkpointing and early stopping).
-  - **Test Set (10%):** 1,479 samples (unseen holdout for final benchmark reporting).
-- **Leakage Prevention Assertion:** Mathematically verified via cryptographic hashing that zero overlap exists across train, validation, and test partitions (`tests/test_dl_lab.py`).
+- **Raw Extracted Events:** Extracted from GitHub Archive daily event dumps.
+- **Deduplication:** Removed 551 duplicate issue identities and 507 identical token sequences across event timestamps.
+- **Cleaned Dataset:** **14,780 distinct issues**.
+- **Data Partitions:**
+  - **Training Set (80%):** 11,823 samples used for gradient updates.
+  - **Validation Set (10%):** 1,478 samples used for checkpoint evaluation.
+  - **Test Set (10%):** 1,479 samples used strictly for final evaluation.
+- **Zero-Leakage Guarantee:** Validated by `tests/test_dl_lab.py`, ensuring zero overlap in issue identifiers and token sequences between train, validation, and test sets.
 
----
-
-## 4. Optimization Strategy & Training Dynamics
-
-- **Optimizer:** `torch.optim.Adam` with learning rate $\alpha = 0.001$ and $L_2$ weight decay $\lambda = 10^{-4}$.
-- **Mini-Batch Size:** 64 samples per step.
-- **Epoch Budget:** 8 full passes over the training set.
-- **Loss Function:** Multi-Class Cross-Entropy with inverse square root class-frequency weighting to counteract minority class suppression:
-  $$\mathcal{L} = -\sum_{c=1}^4 w_c \cdot y_c \log \hat{y}_c, \quad w_c = \frac{1}{\sqrt{N_c}}$$
-- **Overfitting Prevention Evidence:** A controlled ablation experiment was logged (`data/curated/dl_report.json`). Without dropout, validation loss diverged past epoch 3 (reaching 1.25); with `Dropout(0.2)`, validation loss stabilized at 0.44 across all 8 epochs.
+```
++--------------------------------------------------------------------------+
+|                          CLEANED DATASET: 14,780                         |
++-----------------------------------+--------------------+-----------------+
+|          TRAIN: 11,823 (80%)      |   VAL: 1,478 (10%) | TEST: 1,479(10%)|
+|          Gradient Updates         |   Model Selection  | Final Benchmark |
++-----------------------------------+--------------------+-----------------+
+```
 
 ---
 
-## 5. Measured Experimental Benchmarks
+## 5. Training Dynamics and Regularization
 
-Performance was evaluated on the 1,479 held-out test issues. All metrics are empirically verified:
+### 5.1 Optimization Configuration
+- **Algorithm:** Adam (`torch.optim.Adam`).
+- **Learning Rate:** $0.001$.
+- **Weight Decay ($L_2$):** $10^{-4}$.
+- **Batch Size:** 64.
+- **Training Epochs:** 8.
+- **Loss Function:** Class-weighted Cross-Entropy to address class imbalance:
+  $$w_c = \frac{1}{\sqrt{N_c}}$$
 
-| Architecture / Model | Modeling Paradigm | Accuracy | Macro-F1 | Inference Latency | Model Footprint |
+### 5.2 Regularization Ablation (Dropout Effect)
+An ablation experiment recorded in `data/curated/dl_report.json` demonstrates the impact of dropout regularization:
+
+```
+Validation Loss Comparison across 8 Epochs:
+
+Epoch:          1      2      3      4      5      6      7      8
+--------------------------------------------------------------------
+Without Dropout: 0.82   0.68   0.65   0.78   0.94   1.08   1.19   1.25  (Diverges / Overfits)
+With Dropout 0.2: 0.74   0.58   0.51   0.47   0.45   0.44   0.44   0.44  (Converges / Stable)
+```
+
+Without dropout, the network memorizes training tokens, leading to validation loss divergence by epoch 4. With `Dropout(p=0.2)`, validation loss stabilizes at 0.44.
+
+---
+
+## 6. Empirical Performance Benchmarks
+
+Performance evaluated on the 1,479 held-out test issues:
+
+| Model Architecture | Paradigm | Accuracy | Macro-F1 | CPU Latency | Parameter Footprint |
 | :--- | :--- | :---: | :---: | :---: | :---: |
-| **Majority-Class Baseline** | Predicts "Bug" always | 44.69% | 15.44% | 0.0 ms | 0 KB |
-| **Multinomial Naive Bayes** | Probabilistic Bag-of-Words ($\alpha=1.0$) | 74.65% | 50.85% | < 0.5 ms | Sparse Matrix |
-| **PyTorch 1D-CNN (IssueCNN)** | **Deep Neural Network** | **77.15%** | **62.34%** | **1.8 ms** | **5.19 MB** |
+| **Majority Baseline** | Constant "Bug" prediction | 44.69% | 15.44% | 0.0 ms | 0 KB |
+| **Multinomial Naive Bayes** | Probabilistic Bag-of-Words | 74.65% | 50.85% | < 0.5 ms | Sparse Matrix |
+| **IssueCNN (PyTorch)** | **1D-Convolutional Neural Network** | **77.15%** | **62.34%** | **1.8 ms** | **5.19 MB** |
 
-### Detailed Per-Class Breakdown
+### Per-Class Test Set Evaluation
 
-| Category | Test Support | Precision | Recall | F1-Score | Operational Analysis |
+| Category | Test Support | Precision | Recall | F1-Score | Dominant Indicator Patterns |
 | :--- | :---: | :---: | :---: | :---: | :--- |
-| **Bug** | 661 | 79.36% | 82.60% | **80.95%** | High technical term density (`panic`, `segfault`, `error`). |
-| **Enhancement** | 626 | 76.33% | 80.35% | **78.29%** | Frequent proposal vocabulary (`add`, `support`, `feature`). |
-| **Documentation** | 144 | 70.59% | 58.33% | **63.88%** | Medium volume; localized cues (`readme`, `typo`, `guide`). |
-| **Question** | 48 | 61.54% | 16.67% | **26.23%** | Extreme natural minority (3.2% of test set); CNN identified 8 of 48 (Naive Bayes identified 0). |
+| **Bug** | 661 | 79.36% | 82.60% | **80.95%** | `crash`, `panic`, `exception`, `segfault`, `failed` |
+| **Enhancement** | 626 | 76.33% | 80.35% | **78.29%** | `add`, `support`, `feature`, `allow`, `option` |
+| **Documentation** | 144 | 70.59% | 58.33% | **63.88%** | `readme`, `docs`, `typo`, `guide`, `example` |
+| **Question** | 48 | 61.54% | 16.67% | **26.23%** | `how`, `why`, `where`, `configure`, `help` |
 
-**Macro-F1 Justification:** Because open-source software produces substantially more bug reports and feature requests than documentation fixes or configuration questions, overall accuracy is skewed toward the majority classes. Macro-F1 assigns equal weight to all four classes, preventing minority class failures from being concealed behind high accuracy.
-
----
-
-## 6. Production Deployment & Cloud Serving
-
-- **Application Framework:** Streamlit 1.66 modular architecture with distinct functional modules (`src/app/tabs/`).
-- **Containerization:** Multi-stage `Dockerfile` based on `python:3.11-slim`, utilizing official CPU-only PyTorch wheels (`torch==2.14.1+cpu`) to optimize memory footprint and build caching.
-- **Cloud Infrastructure:** Hosted on Railway with dynamic `$PORT` binding, live container healthchecks, and sub-2ms response latency.
-- **Integrated Lakehouse Retrieval:** In addition to category triage, the system queries an in-memory Okapi BM25 index over 8,000 Lakehouse records, retrieving real past issues and historical resolutions for developer context.
+**Why Macro-F1 Matters:**  
+Open-source issue trackers have an inherent class imbalance. Bugs and Enhancements make up 87% of all incoming issues, while Questions make up only 3.2%. A model predicting only the majority classes could achieve high accuracy while failing entirely on questions. Macro-F1 gives equal weight to all four classes, reflecting true multi-class capability.
 
 ---
 
-## 7. Technical Examination & Architectural Defense
+## 7. Production Deployment and Infrastructure
 
-**Q1: Why was a 1D-CNN chosen instead of a recurrent network (LSTM/GRU) or a Transformer?**  
-*Response:* 1D-CNNs evaluate all sequence filters in parallel ($O(1)$ parallel time complexity) rather than sequentially ($O(N)$ for recurrent architectures). For short-to-medium technical texts, local 3-word n-grams provide strong discriminative signal. A 1D-CNN delivers sub-2ms CPU inference and a 5.19 MB memory footprint, avoiding the latency and compute demands of self-attention Transformers on commodity hardware.
+- **Containerization:** Multi-stage `Dockerfile` using `python:3.11-slim` and CPU-specific PyTorch binaries (`torch==2.14.1+cpu`) to keep container image size minimal and build times fast.
+- **Cloud Hosting:** Hosted on Railway with dynamic `$PORT` assignment and automated healthcheck probes.
+- **Operational Serving:** Streamlit interface (`src/app/main.py`) provides real-time model inference, layer tensor inspection, and similarity lookup against Lakehouse data.
+- **Inference Latency:** Sub-2ms per query on single CPU core without external GPU dependencies.
 
-**Q2: What is the exact role of Dropout in this architecture?**  
-*Response:* With 1,297,412 parameters, the model could easily overfit to training vocabularies. Setting $p=0.2$ randomly deactivates 20% of activations during training forward passes. This prevents co-adaptation, forcing the network to develop redundant semantic paths across multiple words.
+---
 
-**Q3: How does the embedding layer handle out-of-vocabulary (OOV) tokens and padding?**  
-*Response:* Words occurring fewer than twice during training map to index 1 (`<unk>`). Index 0 is reserved for `<pad>` with `padding_idx=0` in PyTorch, guaranteeing that padding vectors remain zero and receive zero gradient updates during backpropagation.
+## 8. Technical Architecture Q&A
 
-**Q4: Why is the Macro-F1 score on Questions lower than on Bugs?**  
-*Response:* Real GitHub data exhibits severe class imbalance: the test partition contains 661 Bugs and 626 Enhancements, but only 48 Questions. Due to this natural scarcity, the model receives fewer gradient updates for question syntax. However, inverse frequency weighting enabled the 1D-CNN to capture 8 questions, whereas Naive Bayes scored 0%.
+**1. Why use a 1D-CNN instead of a Recurrent Neural Network (LSTM/GRU) or a Transformer?**  
+- **Parallelism:** 1D-CNNs compute convolutions across the full sequence simultaneously in $O(1)$ sequential operations, unlike RNNs which require $O(N)$ sequential steps.
+- **Efficiency:** Standard Transformers incur quadratic attention cost $O(N^2)$ and require large parameter footprints (100M+ parameters). IssueCNN requires only 1.29M parameters and 5.19 MB of memory.
+- **Suitability:** For software issue triage, local n-grams (such as "null pointer exception" or "update readme instructions") provide the strongest predictive signals, making 3-word convolutional kernels well-suited for the task.
+
+**2. How are out-of-vocabulary (OOV) tokens and padding managed?**  
+- Vocabulary terms occurring fewer than 2 times in the training data map to index 1 (`<unk>`).
+- Sequences shorter than 50 tokens are padded with index 0 (`<pad>`). In PyTorch, `nn.Embedding(..., padding_idx=0)` ensures that the padding embedding vector remains zero and receives zero gradient updates during backpropagation.
+
+**3. What explains the lower F1-score on the Question class?**  
+- The Question class represents only 3.2% of the real-world dataset (48 test instances out of 1,479).
+- Due to limited training volume, question representations receive fewer gradient updates.
+- Applying inverse square-root class weighting enabled the 1D-CNN to correctly identify 8 questions, whereas the baseline Naive Bayes model identified 0.

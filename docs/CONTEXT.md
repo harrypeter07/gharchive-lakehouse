@@ -4,10 +4,16 @@ gharchive-lakehouse: GH Archive -> clean Parquet -> DuckDB star schema -> Spark 
 ## Student environment
 OS: Windows  RAM: 16 GB  Python: 3.11 (in .venv)  Docker: Docker Desktop (SLIM mode configured)
 ## Current step
-Scrubbed third-party dummy AWS and Google keys from public open-source issue texts in splits.parquet and updated dl_report.json hash; pushed commit f160ef4 to GitHub.
+Revamped 'About me' documentation (`docs/DL_LAB_GUIDE.md`) to be diagrammatic, concise, and structured point-to-point without emojis; all 27 tests passing.
 ## Done and verified
 - P1.0 to P1.9: Medallion Lakehouse, zero silent drops (2.05M rows), DuckDB star schema, PySpark cross-engine reconciliation, IR & ML lab, Streamlit app, schema drift test, and master PDF guide.
 - P2.1 to P2.4: Docker stack (PostgreSQL, Airflow, Metabase) running locally, DuckDB to PostgreSQL sync (2.05M rows), Airflow DAG active, 27 integration tests.
+- Diagrammatic, Point-to-Point Architecture Documentation ('About me'):
+  - Rewrote `docs/DL_LAB_GUIDE.md` with visual ASCII dataflow and layer-by-layer tensor diagrams.
+  - Linked every component directly to its Python source file and function (`src/ir/index.py`, `src/ml/model.py`, `src/ml/inference.py`, `src/ml/train.py`, `src/search/ranker.py`).
+  - Preserved all empirical measurements (14,780 issues, 1,297,412 parameters, 77.15% accuracy, 62.34% Macro-F1, sub-2ms latency).
+  - Completely free of emojis, academic homework jargon, and convoluted language.
+  - Verified 100% test pass rate (27 passed, 3 skipped).
 - Security Scrubbing of Open-Source Public Issues:
   - Scanned `splits.parquet` for strings matching AWS (`ASIA...`) and Google (`AIza...`) key patterns.
   - Found 2 public third-party issues from 2024 (`awslabs/aws-sdk-swift#1557` and `wu-jeffrey/tour-to#4`) where external developers had pasted example keys in bug reports.

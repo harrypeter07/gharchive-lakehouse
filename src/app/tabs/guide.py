@@ -8,6 +8,6 @@ def render() -> None:
     st.subheader('About the Developer & System Architecture')
     path = PROJECT_ROOT/'docs'/'DL_LAB_GUIDE.md'
     if path.exists():
-        st.markdown(path.read_text(encoding='utf-8'))
+        st.markdown(path.read_text(encoding='utf-8'), unsafe_allow_html=True)
     else:
         st.info('The documentation file is not available.')
