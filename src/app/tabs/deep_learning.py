@@ -49,37 +49,18 @@ def show_scorecard(report: dict) -> None:
     st.caption('Accuracy = fraction correct. Macro-F1 = average class score, giving rare categories equal weight.')
 
 
-ICONS = {
-    'bug': '🐞 Bug',
-    'enhancement': '✨ Enhancement',
-    'documentation': '📚 Documentation',
-    'question': '❓ Question'
-}
-
-ACTIONS = {
-    'bug': (
-        '🔴 Maintainer Action: Defect Verification & Bug Queue',
-        'Route this ticket to engineering and QA. Mark with high triage priority, reproduce using the reported error logs or stack trace, and check the lakehouse index for duplicate reports.'
-    ),
-    'enhancement': (
-        '🟢 Maintainer Action: Feature Backlog & Architecture Review',
-        'Route this ticket to product backlog. Review API compatibility and feasibility, and request an architectural design proposal.'
-    ),
-    'documentation': (
-        '🔵 Maintainer Action: Docs Team & Contributor Queue',
-        'Label as `good-first-issue` or `documentation`. Point to the relevant README or guide markdown file, and invite open-source community contributors to submit a pull request.'
-    ),
-    'question': (
-        '🟡 Maintainer Action: Developer Support & Forum Redirection',
-        'Provide quick configuration guidance or redirect the user to GitHub Discussions / community forum. Close ticket to keep the engineering bug tracker actionable.'
-    )
+LABELS = {
+    'bug': 'Bug',
+    'enhancement': 'Enhancement',
+    'documentation': 'Documentation',
+    'question': 'Question'
 }
 
 
 def show_prediction(result: dict, nb, text: str, index=None) -> None:
     """Display every output class and the captured model shapes."""
     pred = result['prediction'].lower()
-    pred_display = ICONS.get(pred, pred.capitalize())
+    pred_display = LABELS.get(pred, pred.capitalize())
     cnn_probs = result['probabilities']
     pred_confidence = cnn_probs.get(pred, max(cnn_probs.values()))
 
@@ -92,7 +73,7 @@ def show_prediction(result: dict, nb, text: str, index=None) -> None:
             <span style="background: #46c6ef; color: #0b1222; font-weight: 700; font-size: 10pt; padding: 2px 8px; border-radius: 4px;">{pred_confidence:.1%} Neural Confidence</span>
         </div>
         <div style="color: #cbd5e1; font-size: 8.5pt; margin-top: 6px;">
-            CPU Latency: <b>{result['latency_ms']:.2f} ms</b> · Extracted via 64 Conv1D filters & global max-pooling
+            CPU Forward Pass Latency: <b>{result['latency_ms']:.2f} ms</b> · Extracted via 64 Conv1D filters & global max-pooling
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -102,24 +83,15 @@ def show_prediction(result: dict, nb, text: str, index=None) -> None:
 
     # 2. Four Class Confidence Metric Cards
     m_cols = st.columns(4)
-    for i, (cat_key, icon_label) in enumerate(ICONS.items()):
+    for i, (cat_key, label_name) in enumerate(LABELS.items()):
         prob_val = cnn_probs.get(cat_key, 0.0)
         is_winner = (cat_key == pred)
         delta_str = "Selected" if is_winner else None
-        m_cols[i].metric(label=icon_label, value=f"{prob_val:.1%}", delta=delta_str)
+        m_cols[i].metric(label=label_name, value=f"{prob_val:.1%}", delta=delta_str)
 
-    # 3. Actionable Triage Recommendation (What to do next)
-    action_title, action_desc = ACTIONS.get(pred, ACTIONS['bug'])
-    st.markdown(f"""
-    <div style="background-color: #142139; border-left: 4px solid #46c6ef; border-radius: 4px; padding: 10px 14px; margin: 10px 0 14px 0;">
-        <div style="font-weight: 700; color: #46c6ef; font-size: 9.5pt;">{action_title}</div>
-        <div style="font-size: 8.5pt; color: #cbd5e1; margin-top: 2px;">{action_desc}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # 4. Search Similar Past Issues in Lakehouse Index
+    # 3. Dynamic Search over Real Lakehouse Index
     if index:
-        with st.expander('🔎 Search Real Similar Issues & Fixes in Lakehouse Index', expanded=False):
+        with st.expander('Search Real Similar Issues in Lakehouse Index', expanded=False):
             ranker = BM25Ranker(index, k1=1.5, b=0.75)
             results = ranker.score_query(text, top_k=3)
             if results:
@@ -127,7 +99,7 @@ def show_prediction(result: dict, nb, text: str, index=None) -> None:
                 for rank, (doc_id, score) in enumerate(results, 1):
                     meta = index.doc_metadata.get(doc_id, {})
                     lbl = meta.get('label', 'issue')
-                    lbl_badge = ICONS.get(lbl, lbl.capitalize())
+                    lbl_badge = LABELS.get(lbl, lbl.capitalize())
                     st.markdown(f"""
                     <div style="background-color: #0b1222; border: 1px solid #293a56; border-radius: 6px; padding: 10px; margin-bottom: 8px;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
