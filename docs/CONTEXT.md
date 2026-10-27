@@ -4,10 +4,20 @@ gharchive-lakehouse: GH Archive -> clean Parquet -> DuckDB star schema -> Spark 
 ## Student environment
 OS: Windows  RAM: 16 GB  Python: 3.11 (in .venv)  Docker: Docker Desktop (SLIM mode configured)
 ## Current step
-Completed data deduplication (14,780 clean issues, zero split leakage), retrained PyTorch 1D-CNN with class-weighting, completed modular dark navy UI tabs, authored DL_LAB_GUIDE.md, and regenerated DEEP_LEARNING_LAB_REPORT.pdf (889 KB).
+Added prominent model response verdict banner with exact percentage metric cards, comparison table, and 'What Are We Doing Here?' overview to deep_learning.py; pushed commit 3671374 to GitHub.
 ## Done and verified
 - P1.0 to P1.9: Medallion Lakehouse, zero silent drops (2.05M rows), DuckDB star schema, PySpark cross-engine reconciliation, IR & ML lab, Streamlit app, schema drift test, and master PDF guide.
 - P2.1 to P2.4: Docker stack (PostgreSQL, Airflow, Metabase) running locally, DuckDB to PostgreSQL sync (2.05M rows), Airflow DAG active, 27 integration tests.
+- UI Visibility & Response Polish:
+  - Added large verdict banner with category emoji badge (`🐞 Bug`, `✨ Enhancement`, `📚 Documentation`, `❓ Question`) and exact neural confidence %.
+  - Added 4-card percentage breakdown for all classes, plus comparison table of 1D-CNN vs. Naive Bayes.
+  - Added plain-language explanation of why words like 'configure' get classified as Enhancement (real class imbalance).
+  - Added 'What Are We Doing Here?' overview expander at the top of the Deep Learning page.
+  - Pushed commit `3671374` to `origin/main`.
+- Presentation Slides & Lab Defense Deck:
+  - Authored 8-slide presentation deck with child-like pitch scripts, technical defense details, and empirical benchmark tables.
+  - Exported [C:\Users\ASUS\Downloads\DL_PRESENTATION_SLIDES_AND_GUIDE.pdf](file:///C:/Users/ASUS/Downloads/DL_PRESENTATION_SLIDES_AND_GUIDE.pdf) (1,029,049 bytes) in Downloads folder.
+  - Pushed commit `6f6ca78` to `origin/main` on GitHub.
 - Data Audit & Model Retraining:
   - Deduplicated repeated issues (551 duplicates removed); 14,780 clean records split into train (11,823), val (1,478), test (1,479) with zero token sequence overlap.
   - Re-trained 1D-CNN: 1,297,412 parameters, 20,075 vocab size, test accuracy 77.15%, Macro-F1 62.34%.

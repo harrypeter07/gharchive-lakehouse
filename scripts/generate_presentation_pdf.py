@@ -321,64 +321,80 @@ PRESENTATION_HTML = """<!DOCTYPE html>
   </div>
 </div>
 
-<!-- SLIDE 4: THE 4 LAB PRACTICALS -->
+<!-- SLIDE 4: THE 4 LAB TOPICS & CODE IMPLEMENTATION -->
 <div class="slide">
   <div class="slide-header">
     <div>
-      <div class="slide-num">Slide 4 of 8 · Syllabus Mapping</div>
-      <div class="slide-title">Direct Alignment with College Lab Practicals</div>
-      <div class="slide-subtitle">How our real GitHub classifier implements each core deep learning practical</div>
+      <div class="slide-num">Slide 4 of 8 · Topic-Wise Architecture & Code</div>
+      <div class="slide-title">Core Deep Learning Topics: Real PyTorch Implementation</div>
+      <div class="slide-subtitle">How our model code (`src/ml/model.py`, `train.py`) executes each foundational deep learning concept</div>
     </div>
   </div>
 
   <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; flex: 1;">
     <div class="card">
-      <h4 style="margin: 0 0 4px 0; color: #0284c7;">Practical 6: CNN</h4>
-      <p style="font-size: 8pt; color: #64748b;">Convolution & Pooling</p>
-      <div style="font-size: 8pt;">
-        <b>In our model:</b> 64 filters (`nn.Conv1d`, kernel 3) slide across 3-word windows. <b>Global Max-Pooling</b> grabs the loudest clue from the entire sentence.
+      <h4 style="margin: 0 0 2px 0; color: #0284c7;">Topic 1: 1D Convolution</h4>
+      <p style="font-size: 7.5pt; color: #64748b; margin: 0 0 4px 0;">Practical 6 · Feature Extraction</p>
+      <div style="background: #0b1222; color: #e8f0ff; padding: 4px 6px; border-radius: 4px; font-family: 'Fira Code', monospace; font-size: 6.8pt;">
+        self.conv = nn.Conv1d(64, 64, 3, padding=1)<br>
+        pooled = torch.max(conved, dim=2)[0]
       </div>
-      <div class="speech-box" style="font-size: 7.5pt; margin-top: 6px;">
-        "Like 64 magnifying glasses scanning 3 words at a time."
+      <div style="font-size: 7.8pt; margin-top: 4px;">
+        <b>What our code does:</b> 64 filters slide across 3-word windows detecting trigger phrases (e.g. <i>"segfault"</i>). Global Max-Pooling grabs the loudest clue from the entire issue sentence.
       </div>
-    </div>
-
-    <div class="card">
-      <h4 style="margin: 0 0 4px 0; color: #0284c7;">Practical 5: Regularizers</h4>
-      <p style="font-size: 8pt; color: #64748b;">Preventing Overfitting</p>
-      <div style="font-size: 8pt;">
-        <b>In our model:</b> `nn.Dropout(p=0.2)` randomly sets 20% of activations to 0 during training, forcing redundant, robust feature learning.
-      </div>
-      <div class="speech-box" style="font-size: 7.5pt; margin-top: 6px;">
-        "Like blindfolding 20% of the player's eyes so they don't memorize one trick."
+      <div class="speech-box" style="font-size: 7.2pt; margin-top: 4px;">
+        "Magnifying glasses scanning 3 words at a time."
       </div>
     </div>
 
     <div class="card">
-      <h4 style="margin: 0 0 4px 0; color: #0284c7;">Practical 4: Optimizers</h4>
-      <p style="font-size: 8pt; color: #64748b;">Adam & Mini-Batches</p>
-      <div style="font-size: 8pt;">
-        <b>In our model:</b> `torch.optim.Adam` (lr=0.001) computes adaptive learning rates per parameter on mini-batches of 64 issues.
+      <h4 style="margin: 0 0 2px 0; color: #0284c7;">Topic 2: Regularization</h4>
+      <p style="font-size: 7.5pt; color: #64748b; margin: 0 0 4px 0;">Practical 5 · Dropout Prevention</p>
+      <div style="background: #0b1222; color: #e8f0ff; padding: 4px 6px; border-radius: 4px; font-family: 'Fira Code', monospace; font-size: 6.8pt;">
+        self.dropout = nn.Dropout(p=0.2)<br>
+        fc_in = self.dropout(pooled)
       </div>
-      <div class="speech-box" style="font-size: 7.5pt; margin-top: 6px;">
-        "A smart mountain bike with gears that speeds up on flats and slows on rocky turns."
+      <div style="font-size: 7.8pt; margin-top: 4px;">
+        <b>What our code does:</b> Randomly zeroes 20% of neuron outputs during each forward training pass. Prevents the 1.29M weights from memorizing exact training sentences, stopping validation loss divergence.
+      </div>
+      <div class="speech-box" style="font-size: 7.2pt; margin-top: 4px;">
+        "Blindfolding 20% of the player's eyes during practice."
       </div>
     </div>
 
     <div class="card">
-      <h4 style="margin: 0 0 4px 0; color: #0284c7;">Practical 3: Feedforward</h4>
-      <p style="font-size: 8pt; color: #64748b;">Dense Head & Softmax</p>
-      <div style="font-size: 8pt;">
-        <b>In our model:</b> `nn.Linear(64, 4)` projects features to 4 logits. `torch.softmax` outputs calibrated percentages summing to 1.00.
+      <h4 style="margin: 0 0 2px 0; color: #0284c7;">Topic 3: Optimization</h4>
+      <p style="font-size: 7.5pt; color: #64748b; margin: 0 0 4px 0;">Practical 4 · Adam & Batching</p>
+      <div style="background: #0b1222; color: #e8f0ff; padding: 4px 6px; border-radius: 4px; font-family: 'Fira Code', monospace; font-size: 6.8pt;">
+        opt = Adam(model.parameters(), lr=1e-3)<br>
+        loader = DataLoader(batch_size=64)
       </div>
-      <div class="speech-box" style="font-size: 7.5pt; margin-top: 6px;">
-        "4 judges voting with percentages that always add up to 100%."
+      <div style="font-size: 7.8pt; margin-top: 4px;">
+        <b>What our code does:</b> Trains over 11,823 issues in mini-batches of 64. Adam dynamically scales learning rates per weight using momentum and variance moments for smooth, stable convergence.
+      </div>
+      <div class="speech-box" style="font-size: 7.2pt; margin-top: 4px;">
+        "Mountain bike with gears that adapts to steep slopes."
+      </div>
+    </div>
+
+    <div class="card">
+      <h4 style="margin: 0 0 2px 0; color: #0284c7;">Topic 4: Classification Head</h4>
+      <p style="font-size: 7.5pt; color: #64748b; margin: 0 0 4px 0;">Practical 3 · Dense & Softmax</p>
+      <div style="background: #0b1222; color: #e8f0ff; padding: 4px 6px; border-radius: 4px; font-family: 'Fira Code', monospace; font-size: 6.8pt;">
+        self.fc = nn.Linear(64, 4)<br>
+        probs = torch.softmax(logits, dim=1)
+      </div>
+      <div style="font-size: 7.8pt; margin-top: 4px;">
+        <b>What our code does:</b> Linear layer projects 64 pooled features to 4 class logits. Softmax exponentiates and normalizes them into calibrated percentages summing to 1.00.
+      </div>
+      <div class="speech-box" style="font-size: 7.2pt; margin-top: 4px;">
+        "4 voting judges with percentages summing to 100%."
       </div>
     </div>
   </div>
 
   <div class="footer-bar">
-    <span>Demonstrates CNN, Regularization, Optimization, and Feedforward Networks</span>
+    <span>PyTorch Source: src/ml/model.py · src/ml/train.py · src/ml/inference.py</span>
     <span>Slide 4</span>
   </div>
 </div>
