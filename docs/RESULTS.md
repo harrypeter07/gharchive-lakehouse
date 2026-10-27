@@ -37,3 +37,16 @@ Generated on: 2026-10-26 14:46:15 UTC
 | **documentation** | 33 | 71 | 76 | 0 |
 | **enhancement** | 129 | 13 | 635 | 0 |
 | **question** | 29 | 1 | 20 | 4 |
+
+## 3. Deep Learning: 1D-CNN Classifier
+- **Architecture**: Embedding(dim=64) -> Conv1D(64, kernel=3) -> ReLU -> MaxPool1D -> Dropout(0.2) -> Linear(4)
+- **Vocabulary Size (Train Only)**: 22,415 tokens
+- **Training Epochs**: 4
+- **Test Accuracy**: **78.81%**
+- **Macro F1-Score**: **60.72%**
+
+### Model Comparison
+| Model | Type | Test Accuracy | Macro F1 |
+| :--- | :--- | :--- | :--- |
+| **Multinomial Naive Bayes** | Probabilistic n-gram | 75.94% | 56.22% |
+| **1D-CNN** | Deep Convolutional | **78.81%** | **60.72%** |

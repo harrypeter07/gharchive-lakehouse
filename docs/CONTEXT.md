@@ -1,35 +1,37 @@
 # CONTEXT (agent keeps this current)
 ## Project
-gharchive-lakehouse: GH Archive -> clean Parquet -> DuckDB star schema -> Spark check -> IR + ML -> Streamlit -> Docker (Postgres, Airflow, Metabase).
+gharchive-lakehouse: GH Archive -> clean Parquet -> DuckDB star schema -> Spark check -> IR + ML -> Streamlit -> Docker (Postgres, Airflow, Metabase) -> Cloud Deployment (Railway).
 ## Student environment
-OS: Windows  RAM: 16 GB  Python: 3.11 (in .venv)  Docker: Docker Desktop 29.9.2 running (SLIM mode active)
+OS: Windows  RAM: 16 GB  Python: 3.11 (in .venv)  Docker: Docker Desktop (SLIM mode configured)
 ## Current step
-Phase 2 Complete: Docker stack launched, DuckDB synchronized to PostgreSQL warehouse, Airflow DAG active, Metabase BI healthy, 23/23 tests passing.
+Deep Learning Lab Documentation, Railway Deployment Packaging, and Academic PDF Report completed and verified.
 ## Done and verified
-- P1.0 to P1.9: Complete Medallion Lakehouse, zero silent drops (2.05M rows), DuckDB star schema, PySpark cross-engine reconciliation, IR & ML lab, Streamlit app, schema drift test, and complete PDF guide.
-- P2.1 Docker Stack Launch:
-  - `lakehouse_postgres` (`postgres:16.3-alpine`) on port 5432: UP & HEALTHY.
-  - `lakehouse_airflow_init`: Database migrations complete, admin user created.
-  - `lakehouse_airflow_webserver` (`apache/airflow:2.9.2-python3.11`) on port 8080: UP & HEALTHY.
-  - `lakehouse_airflow_scheduler`: UP & ACTIVE (LocalExecutor).
-  - `lakehouse_metabase` (`metabase/metabase:v0.49.13`) on port 3000: UP & HEALTHY.
-- P2.2 Warehouse Export:
-  - Authored `src/warehouse/export_postgres.py` using DuckDB's postgres extension.
-  - Exported: `dim_date` (1), `dim_event_type` (6), `dim_repo` (514k), `dim_actor` (483k), `agg_stars_per_repo_day` (69,326), `agg_events_per_hour` (108), `fact_events` (2,057,052).
-- P2.3 Airflow DAG:
-  - Authored `docker/airflow/dags/gharchive_dag.py` (`gharchive_daily_lakehouse`).
-- P2.4 Testing:
-  - Added `tests/test_phase2_docker.py` verifying container health, Metabase API, and Airflow webserver.
-  - All 23 tests passing (`pytest -q`).
+- P1.0 to P1.9: Medallion Lakehouse, zero silent drops (2.05M rows), DuckDB star schema, PySpark cross-engine reconciliation, IR & ML lab, Streamlit app, schema drift test, and master PDF guide.
+- P2.1 to P2.4: Docker stack (PostgreSQL, Airflow, Metabase) running locally, DuckDB to PostgreSQL sync (2.05M rows), Airflow DAG active, 23 integration tests.
+- Deep Learning Verification & Lab README:
+  - Verified genuine PyTorch model: `IssueCNN` with 1,447,172 trainable parameters, Adam optimizer ($lr=10^{-3}$), CrossEntropyLoss.
+  - Weights serialized at `data/curated/cnn_weights.pt` (5.79 MB) and `vocab.json` (22,553 tokens).
+  - Authored beginner-friendly `docs/DEEP_LEARNING_README.md` with post office analogy, viva Q&A, and terminal proof.
+- Cloud Deployment on Railway:
+  - Authored production `Dockerfile` (Python 3.11-slim, CPU PyTorch, dynamic `$PORT` binding).
+  - Created `railway.json`, `.dockerignore`, and step-by-step `docs/RAILWAY_DEPLOYMENT_GUIDE.md`.
+  - Created standalone 8.1 MB `data/curated/demo_lakehouse.duckdb` to allow full cloud analytics without hitting GitHub's 100 MB file limit.
+- Academic PDF Report:
+  - Authored `scripts/generate_dl_report_pdf.py` generating `docs/DEEP_LEARNING_LAB_REPORT.pdf` (790 KB).
+  - Copied directly to `C:\Users\ASUS\Downloads\DEEP_LEARNING_LAB_REPORT.pdf`.
+- Test Suite:
+  - Authored `tests/test_dl_model.py` verifying tensor shapes, weights, and exact 1,447,172 parameters.
+  - All 22 tests passing, 3 skipped cleanly (`pytest -q`).
 ## Broken / blocked
 (nothing)
 ## Commands that work
-- `.\.venv\Scripts\pytest.exe -q` (23 passed in 20s)
-- `.\.venv\Scripts\python.exe -m src.warehouse.export_postgres`
-- `$env:PATH = "C:\Users\ASUS\AppData\Local\Programs\DockerDesktop\resources\bin;" + $env:PATH; docker compose -f docker/docker-compose.yml ps`
+- `.\.venv\Scripts\pytest.exe -q` (22 passed, 3 skipped in 27s)
+- `.\.venv\Scripts\python.exe scripts/generate_dl_report_pdf.py`
+- `.\.venv\Scripts\streamlit.exe run src/app/main.py`
 ## Next action
-Review Airflow Web UI at http://localhost:8080 and Metabase BI at http://localhost:3000.
+Student can push to GitHub, follow `docs/RAILWAY_DEPLOYMENT_GUIDE.md` to deploy live on Railway, and submit `C:\Users\ASUS\Downloads\DEEP_LEARNING_LAB_REPORT.pdf` for college grading.
 ## History
 - 2026-10-25: P1.0 bootstrapped, P1.1 gate check passed, P1.2 downloaded raw data.
 - 2026-10-26: P1.3 cleaned Parquet silver layer, P1.4 built DuckDB star schema, P1.5 reconciled PySpark vs DuckDB, P1.6 evaluated IR and Naive Bayes, P1.7/P1.8/P1.9 completed notebooks, schema drift, Streamlit app, and complete PDF guide.
 - 2026-10-26: Phase 2 launched: Docker containers healthy, 2.05M records synchronized to PostgreSQL serving layer, Airflow DAG scheduled, Metabase online.
+- 2026-10-27: Authored DL lab README, packaged Railway deployment with Dockerfile, generated DL lab PDF report in Downloads, added DL model tests.

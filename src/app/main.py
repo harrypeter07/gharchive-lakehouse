@@ -147,6 +147,10 @@ def load_all_models():
 
 index, nb_model, cnn_model, cnn_vocab, all_records = load_all_models()
 db_path = PROJECT_ROOT / "data" / "lakehouse.duckdb"
+if not db_path.exists():
+    fallback_db = CURATED_DATA_DIR / "demo_lakehouse.duckdb"
+    if fallback_db.exists():
+        db_path = fallback_db
 
 # Session State for interactive buttons
 if "search_query" not in st.session_state:

@@ -47,3 +47,9 @@ Template: ## D-001 | date | topic
 - **Why**: PyArrow is the industry standard for writing partitioned Parquet datasets with type safety and zero-copy performance. DuckDB provides serverless vectorized SQL OLAP capabilities directly on local Parquet files without requiring a database daemon.
 - **Alternatives rejected**: `fastparquet` (slower, less active maintenance); full cloud warehouse for Phase 1.
 - **Revisit if**: Dataset expands beyond single-node memory capacity during distributed scaling.
+
+## D-006 | 2026-10-27 | Cloud Deployment on Railway & Deep Learning Lab Packaging
+- **Chosen**: Containerized deployment on Railway using a multi-stage `Dockerfile` (Python 3.11-slim, CPU PyTorch, Streamlit dynamic `$PORT` binding) with curated ML/DL weights (`cnn_weights.pt`, `vocab.json`, `demo_lakehouse.duckdb`).
+- **Why**: Railway provides deterministic cloud builds, free hobby credits, and automatic HTTPS subdomains without requiring manual cloud infrastructure management. Including lightweight curated weights (under 20 MB total) allows instantaneous inference in the cloud without large training overheads or exceeding GitHub's 100 MB file limits.
+- **Alternatives rejected**: Deploying raw 164 MB DuckDB directly (exceeds GitHub limit of 100 MB); serverless AWS Lambda (unnecessary complexity for Streamlit).
+- **Revisit if**: Student migrates from hobby tier to dedicated Kubernetes or ECS cluster.

@@ -7,9 +7,13 @@ env/
 venv/
 
 # Data and DuckDB files
-data/
-*.duckdb
-*.duckdb.wal
+data/raw/
+data/bronze/
+data/clean/
+data/gold/
+data/lakehouse.duckdb*
+!data/curated/
+!data/curated/**
 
 # Python artifacts
 __pycache__/
