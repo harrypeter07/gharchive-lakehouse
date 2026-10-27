@@ -4,10 +4,15 @@ gharchive-lakehouse: GH Archive -> clean Parquet -> DuckDB star schema -> Spark 
 ## Student environment
 OS: Windows  RAM: 16 GB  Python: 3.11 (in .venv)  Docker: Docker Desktop (SLIM mode configured)
 ## Current step
-Rebranded 'Lab guide' to 'About me' with professional, emoji-free system architecture and engineering documentation authored by Hassan; pushed commit 037af25 to GitHub.
+Removed static ACTIONS dictionary from deep_learning.py, ensuring output reflects 100% dynamic PyTorch tensor inference and dynamic BM25 Lakehouse retrieval; pushed commit c748eec to GitHub.
 ## Done and verified
 - P1.0 to P1.9: Medallion Lakehouse, zero silent drops (2.05M rows), DuckDB star schema, PySpark cross-engine reconciliation, IR & ML lab, Streamlit app, schema drift test, and master PDF guide.
 - P2.1 to P2.4: Docker stack (PostgreSQL, Airflow, Metabase) running locally, DuckDB to PostgreSQL sync (2.05M rows), Airflow DAG active, 27 integration tests.
+- 100% Dynamic Model Inference (Zero Hardcoded Responses):
+  - Removed static `ACTIONS` text dictionaries entirely.
+  - Model computes dynamic forward pass on ANY user-typed text in real time (`predict_issue` via PyTorch).
+  - All displayed outputs (probabilities, latency, token trace, word IDs, input shapes) are computed live on CPU.
+  - Pushed commit `c748eec` to `origin/main`.
 - Professional System Documentation ('About me'):
   - Transformed the guide into a rigorous, publication-grade technical specification authored by Hassan (RCOEM CSE).
   - Completely removed emojis and classroom/homework framing ("aligning with lab practicals").
