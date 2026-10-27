@@ -4,20 +4,25 @@ gharchive-lakehouse: GH Archive -> clean Parquet -> DuckDB star schema -> Spark 
 ## Student environment
 OS: Windows  RAM: 16 GB  Python: 3.11 (in .venv)  Docker: Docker Desktop (SLIM mode configured)
 ## Current step
-Repository successfully created on GitHub and all commits pushed to https://github.com/harrypeter07/gharchive-lakehouse (origin/main up to date).
+College Practicals Alignment (Practicals 3, 4, 5, 6, 7) fully implemented in Streamlit Tab 3, README, and regenerated PDF report; pushed commit 7989e7f to https://github.com/harrypeter07/gharchive-lakehouse.
 ## Done and verified
 - P1.0 to P1.9: Medallion Lakehouse, zero silent drops (2.05M rows), DuckDB star schema, PySpark cross-engine reconciliation, IR & ML lab, Streamlit app, schema drift test, and master PDF guide.
 - P2.1 to P2.4: Docker stack (PostgreSQL, Airflow, Metabase) running locally, DuckDB to PostgreSQL sync (2.05M rows), Airflow DAG active, 23 integration tests.
-- GitHub Push (COMPLETE & VERIFIED):
-  - Created remote repository `https://github.com/harrypeter07/gharchive-lakehouse`.
-  - Pushed all 22 project files and ML/DL weights (`cnn_weights.pt`, `vocab.json`, `splits.parquet`, `demo_lakehouse.duckdb`).
-  - Upstream branch tracking verified: `Your branch is up to date with 'origin/main'`.
+- GitHub Push & Railway Auto-Deploy:
+  - Repository: `https://github.com/harrypeter07/gharchive-lakehouse`.
+  - Pushed commit `7989e7f` (`feat(dl): align deep learning tab with college practicals 3-6 and update lab report`).
+  - Branch up to date with `origin/main`.
 - Streamlit Execution Page (Tab 3):
+  - Fixed button click triggers using `st.session_state` and `st.rerun()`.
+  - Integrated 4 dedicated college practical studios:
+    - Practical 6: Exact 2D matrix convolution ($X \in 4\times 4, K \in 3\times 3 \implies FM \in 2\times 2$, Stride 1, Padding 0, Flattening, Dense layer, Sigmoid).
+    - Practical 4: Study of 6 Optimizers (Vanilla GD, Momentum, NAG, Adagrad, RMSProp, Adam) + Batching strategies with interactive loss curves.
+    - Practical 5: Study of Regularizers (L1, L2, Dropout, Early Stopping) with overfitting prevention curves.
+    - Practical 3: Feedforward Neural Network architecture with ReLU and Softmax.
   - Live side-by-side execution: Multinomial Naive Bayes + PyTorch 1D-CNN.
-  - Live neural tensor diagnostics expander (Token IDs, input tensor `[1, 50]`, Conv1D activations, Max-Pooling `[1, 64]`, output logits).
   - Verified with real in-memory load test: 8,000 index docs, 22,415 vocab, CNN active.
 - Academic PDF Report:
-  - Authored `docs/DEEP_LEARNING_LAB_REPORT.pdf` (790 KB) in project docs and directly in `C:\Users\ASUS\Downloads\DEEP_LEARNING_LAB_REPORT.pdf`.
+  - Authored and compiled `docs/DEEP_LEARNING_LAB_REPORT.pdf` (877 KB) including the RCOEM CSE college practicals section, and copied to `C:\Users\ASUS\Downloads\DEEP_LEARNING_LAB_REPORT.pdf`.
 ## Broken / blocked
 (nothing)
 ## Commands that work
