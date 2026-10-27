@@ -303,7 +303,7 @@
     }
   ],
   "artifacts": {
-    "splits.parquet": "a7d3a6158c6c4aa67de7c5d70f3262618061142e47176c113a3ffa22810e6908",
+    "splits.parquet": "a779f409ec077aef384996aa4e67b8821bb1e8ef1221d104dc022649f56dbd15",
     "cnn_weights.pt": "11f4d54a808d008aad2940b440177b610c0360890cc5af1787464fd53a6f51e3",
     "vocab.json": "c2d8fd0c75e34a585a9ede2e633d44a2329e39ba3917bd7ca7cda821ce16eaa2"
   }
