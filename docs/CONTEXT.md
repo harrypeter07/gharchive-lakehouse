@@ -4,10 +4,16 @@ gharchive-lakehouse: GH Archive -> clean Parquet -> DuckDB star schema -> Spark 
 ## Student environment
 OS: Windows  RAM: 16 GB  Python: 3.11 (in .venv)  Docker: Docker Desktop (SLIM mode configured)
 ## Current step
-Organized Deep Learning practicals into topic-wise tabs with real PyTorch code snippets and explanations in deep_learning.py and regenerated Slide 4 in DL_PRESENTATION_SLIDES_AND_GUIDE.pdf (1.13 MB); pushed commit a7412e3 to GitHub.
+Added real lakehouse similar-issue search and maintainer action recommendations to Deep Learning prediction output; pushed commit 432a636 to GitHub.
 ## Done and verified
 - P1.0 to P1.9: Medallion Lakehouse, zero silent drops (2.05M rows), DuckDB star schema, PySpark cross-engine reconciliation, IR & ML lab, Streamlit app, schema drift test, and master PDF guide.
 - P2.1 to P2.4: Docker stack (PostgreSQL, Airflow, Metabase) running locally, DuckDB to PostgreSQL sync (2.05M rows), Airflow DAG active, 27 integration tests.
+- Practical & Actionable Prediction Output:
+  - Deep Learning 1D-CNN performs 4-class categorization (Bug, Enhancement, Docs, Question).
+  - Added maintainer actionable recommendations for each class (e.g. defect verification, backlog review).
+  - Embedded real lakehouse similarity search (`BM25Ranker`) to retrieve real past matching issues from the 8,000 indexed records so developers can see real past discussions and fixes.
+  - Zero hardcoded or faked data.
+  - Pushed commit `432a636` to `origin/main`.
 - UI Visibility & Response Polish:
   - Added large verdict banner with category emoji badge (`🐞 Bug`, `✨ Enhancement`, `📚 Documentation`, `❓ Question`) and exact neural confidence %.
   - Added 4-card percentage breakdown for all classes, plus comparison table of 1D-CNN vs. Naive Bayes.
