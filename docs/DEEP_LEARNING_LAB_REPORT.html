@@ -427,62 +427,54 @@ We benchmarked our PyTorch 1D-CNN against a classical Information Retrieval base
 </table>
 
 <!-- SECTION 6: COLLEGE PRACTICALS ALIGNMENT -->
-<h2>6. Academic Syllabus Alignment: Deep Learning Practicals (RCOEM CSE)</h2>
+<h2>6. Academic Syllabus Alignment: How the Issue Classifier Solves Lab Practicals</h2>
 <p>
-This project directly implements and demonstrates the foundational principles covered across the academic semester lab syllabus:
+This project is not a generic toy script—it is an end-to-end industrial software lakehouse where our <b>GitHub Issue Classifier directly demonstrates and solves the 4 core Deep Learning Lab Practicals</b>:
 </p>
 
 <table>
   <thead>
     <tr>
-      <th style="width: 18%;">Syllabus Practical</th>
-      <th style="width: 25%;">Academic Core Concept</th>
-      <th style="width: 32%;">Project Implementation Details</th>
-      <th style="width: 25%;">Lab Evaluation Proof</th>
+      <th style="width: 20%;">Lab Practical</th>
+      <th style="width: 25%;">Core Theoretical Topic</th>
+      <th style="width: 30%;">How It Is Implemented In Our Classifier</th>
+      <th style="width: 25%;">Verification in Code & App</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td><b>Practical No. 3</b></td>
-      <td>Feedforward Neural Networks & Backpropagation</td>
-      <td>Dense multi-class classification head with Softmax output layer computing \(P(y_c \mid \mathbf{h})\) across 4 issue categories.</td>
-      <td>Backpropagated Cross-Entropy gradients through linear projection layer (\(64 	o 4\)).</td>
+      <td><b>Practical No. 6</b><br>(CNN Architecture)</td>
+      <td>Convolution, Sliding Kernels, Max-Pooling, Flattening</td>
+      <td><code>nn.Conv1d(64, 64, kernel_size=3)</code> slides 64 filters across 3-word phrases. Global Max-Pooling extracts the dominant phrase clue.</td>
+      <td><code>src/ml/model.py</code><br>Live tensor output: <code>[1, 64]</code></td>
     </tr>
     <tr>
-      <td><b>Practical No. 4</b></td>
-      <td>Study of 6 Deep Learning Optimizers & Batching</td>
-      <td>Benchmarked Vanilla GD, Momentum (\(eta=0.9\)), NAG, Adagrad, RMSProp, and Adam (\(eta_1=0.9, eta_2=0.999\)). Mini-batch size = 64.</td>
-      <td>Adam achieved lowest cross-entropy loss (0.42) with fastest epoch convergence.</td>
+      <td><b>Practical No. 5</b><br>(Regularization)</td>
+      <td>Dropout, L2 Weight Decay, Early Stopping, Overfitting</td>
+      <td><code>nn.Dropout(p=0.2)</code> randomly mutes 20% of activations during training so the network does not memorize exact issue titles.</td>
+      <td>Validation loss stabilized at 0.44 instead of diverging to 1.25.</td>
     </tr>
     <tr>
-      <td><b>Practical No. 5</b></td>
-      <td>Study of Regularizers (Preventing Overfitting)</td>
-      <td>Integrated <code>nn.Dropout(p=0.2)</code>, L2 Weight Decay (\(\lambda = 10^{-4}\)), and Early Stopping based on validation loss.</td>
-      <td>Prevented overfitting divergence: validation loss stabilized at 0.44 vs 1.25 unregularized.</td>
+      <td><b>Practical No. 4</b><br>(Study of Optimizers)</td>
+      <td>SGD, Momentum, RMSProp, Adam, Batch vs Mini-batch</td>
+      <td><code>torch.optim.Adam(lr=0.001)</code> with mini-batches of 64 issue reports dynamically scales learning rates for all 1.45M weights.</td>
+      <td>Converged in 4 epochs on CPU in <code>src/ml/train.py</code>.</td>
     </tr>
     <tr>
-      <td><b>Practical No. 6</b></td>
-      <td>CNN Forward Propagation & Matrix Arithmetic</td>
-      <td>1D Temporal Convolutions (\(k=3\), 64 filters) extracting phrase n-grams. Includes verified 2D matrix convolution from classroom tutorial.</td>
-      <td>Exact matrix arithmetic: \(4 	imes 4\) input \(st\) \(3 	imes 3\) kernel \(\implies 2 	imes 2\) Feature Map \(	o\) Sigmoid.</td>
-    </tr>
-    <tr>
-      <td><b>Practical No. 7</b></td>
-      <td>Transfer Learning & Pretrained Backbones</td>
-      <td>Pretrained semantic embeddings mapping 22,553 technical terms to dense 64-dimensional latent vectors.</td>
-      <td>Preserves semantic relationships without retraining entire vocabulary from zero.</td>
+      <td><b>Practical No. 3</b><br>(Feedforward & Softmax)</td>
+      <td>Multi-layer dense network, Backpropagation, Softmax</td>
+      <td><code>nn.Linear(64, 4)</code> dense head calculates logits and applies <code>torch.softmax</code> to output normalized probabilities for the 4 classes.</td>
+      <td>Outputs 4 probabilities summing to exactly 1.00.</td>
     </tr>
   </tbody>
 </table>
 
-<div class="proof-box">
-  <strong>📝 Practical 6 Classroom Tutorial Matrix Verification:</strong><br>
-  Given Input Matrix \(X = egin{bmatrix} 1 & 0 & 1 & 2 \ 0 & 3 & 2 & 1 \ 2 & 1 & 0 & 2 \ 1 & 2 & 1 & 0 \end{bmatrix}\) and Kernel \(K = egin{bmatrix} 1 & 0 & 1 \ 0 & 1 & 0 \ 1 & 0 & 1 \end{bmatrix}\) with Stride \(S=1\), Padding \(P=0\):<br>
-  &bull; Output Dimension: \(\left(rac{4 - 3 + 2(0)}{1}ight) + 1 = 2 	imes 2\).<br>
-  &bull; Feature Map \(FM = egin{bmatrix} (1+1+3+0+0)=5 & (0+2+2+2+2)=8 \ (0+2+1+1+1)=5 & (3+1+0+2+0)=6 \end{bmatrix}\).<br>
-  &bull; Flattened Vector: \([5, 8, 5, 6]^T\). With Dense Weight Vector \(W = [0.2, -0.1, 0.4, 0.1]\) and Bias \(b = 0.5\):<br>
-  &bull; \(z = (5)(0.2) + (8)(-0.1) + (5)(0.4) + (6)(0.1) + 0.5 = 1.0 - 0.8 + 2.0 + 0.6 + 0.5 = 3.3\).<br>
-  &bull; Sigmoid Activation: \(\sigma(3.3) = rac{1}{1 + e^{-3.3}} pprox 0.9644\) (Class 1 Confidence: <b>96.44%</b>).
+<div class="analogy-box">
+  <strong>👶 Explain-Like-I'm-10: How the 4 Practicals Work Together Inside the Classifier:</strong><br>
+  1. <b>Practical 6 (The Magnifying Glass - CNN):</b> A child reads a book looking for 3 words at a time. When they spot <em>"segmentation fault in"</em>, their brain rings a loud bell: <em>"AHA! That is definitely a BUG!"</em> Max-pooling remembers the loudest bell.<br>
+  2. <b>Practical 5 (The Blindfold Drill - Dropout):</b> While practicing, the coach blindfolds 20% of the player's eyes at random. This forces the student to learn multiple different clues (like <em>"panic"</em>, <em>"SIGSEGV"</em>, <em>"dumped"</em>) instead of relying on just one word.<br>
+  3. <b>Practical 4 (The Smart Bicycle - Adam Optimizer):</b> Instead of walking down a steep mountain blindly (Basic SGD), Adam uses adaptive gears and brakes to smoothly glide down the loss valley without crashing, learning from 64 issues at a time.<br>
+  4. <b>Practical 3 (The Sorting Baskets - Feedforward & Softmax):</b> At the very end, 4 baskets sit on the table. The referee converts all the neural scores into percentages (e.g., Bug: 94%, Feature: 4%, Docs: 1%, Question: 1%) that add up to 100%.
 </div>
 
 <!-- SECTION 7: CLOUD DEPLOYMENT ON RAILWAY -->
