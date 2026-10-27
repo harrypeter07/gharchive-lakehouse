@@ -69,7 +69,7 @@ def test_saved_report_matches_artifacts_and_confusion_counts():
 def test_app_navigation_presets_inference_and_blank_input():
     app = AppTest.from_file(str(Path('src/app/main.py').resolve()), default_timeout=30).run()
     assert not app.exception
-    for section in ('Issue search','Archive download','Lab guide','Deep learning'):
+    for section in ('Issue search','Archive download','About me','Deep learning'):
         app.radio[0].set_value(section).run()
         assert not app.exception
     app.button[2].click().run()  # Documentation preset
