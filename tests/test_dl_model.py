@@ -33,10 +33,10 @@ def test_model_loading_and_inference():
     
     model = create_issue_cnn(vocab_size=vocab_size, num_classes=4, embed_dim=64, num_filters=64)
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    assert total_params == 1_447_172, f"Expected 1,447,172 parameters, got {total_params}"
+    assert total_params == vocab_size * 64 + 64 * 64 * 3 + 64 + 64 * 4 + 4
     
     # Load state dict
-    state_dict = torch.load(weights_path, map_location="cpu")
+    state_dict = torch.load(weights_path, map_location="cpu", weights_only=True)
     model.load_state_dict(state_dict)
     model.eval()
     

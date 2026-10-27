@@ -39,6 +39,33 @@ def normalize_label(labels: List[str]) -> str | None:
     return None
 
 
+def assign_clean_splits(records: list[dict], seed: int = GLOBAL_SEED) -> list[dict]:
+    """Keep one issue and token sequence, then split each class reproducibly."""
+    from src.ir.index import tokenize
+    from src.common.config import DL_MAX_LEN
+
+    seen_issues, seen_texts = set(), set()
+    unique = []
+    for row in sorted(records, key=lambda r: r["event_id"]):
+        issue = (row["repo_name"], row["issue_number"])
+        text = tuple(tokenize(f"{row['title']} {row['body']}")[:DL_MAX_LEN])
+        if not text or issue in seen_issues or text in seen_texts:
+            continue
+        seen_issues.add(issue)
+        seen_texts.add(text)
+        unique.append(dict(row))
+    rng = random.Random(seed)
+    output = []
+    for label in TARGET_CLASSES:
+        group = [r for r in unique if r["label"] == label]
+        rng.shuffle(group)
+        train_end, val_end = int(len(group) * .8), int(len(group) * .9)
+        for i, row in enumerate(group):
+            row["split"] = "train" if i < train_end else "val" if i < val_end else "test"
+        output.extend(group)
+    return output
+
+
 def run_split(
     db_path: Path | None = None,
     output_path: Path | None = None,
@@ -87,23 +114,11 @@ def run_split(
                 "label": canonical,
             })
 
-    # Deterministic shuffle
-    rng = random.Random(seed)
-    rng.shuffle(labeled_data)
-
+    labeled_data = assign_clean_splits(labeled_data, seed)
     n_total = len(labeled_data)
-    n_train = int(n_total * 0.80)
-    n_val = int(n_total * 0.10)
-    # Remaining goes to test to guarantee exact sum
-    n_test = n_total - n_train - n_val
-
-    for i, item in enumerate(labeled_data):
-        if i < n_train:
-            item["split"] = "train"
-        elif i < n_train + n_val:
-            item["split"] = "val"
-        else:
-            item["split"] = "test"
+    n_train = sum(d["split"] == "train" for d in labeled_data)
+    n_val = sum(d["split"] == "val" for d in labeled_data)
+    n_test = sum(d["split"] == "test" for d in labeled_data)
 
     event_ids = [d["event_id"] for d in labeled_data]
     repo_names = [d["repo_name"] for d in labeled_data]

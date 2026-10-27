@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PyTorch CPU wheel first for maximum layer caching
-RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir torch==2.14.1+cpu --index-url https://download.pytorch.org/whl/cpu
 
 # Copy and install python dependencies
 COPY requirements.txt .
@@ -23,6 +23,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application source code and curated ML/DL assets
 COPY src/ ./src/
+COPY .streamlit/ ./.streamlit/
+COPY docs/DL_LAB_GUIDE.md ./docs/DL_LAB_GUIDE.md
 COPY data/curated/ ./data/curated/
 COPY README.md .
 

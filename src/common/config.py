@@ -42,3 +42,11 @@ ACTOR_HASH_SALT = os.getenv("ACTOR_HASH_SALT") or os.getenv("ACTOR_SALT") or "de
 
 # Gemini API configuration
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+
+# Small CPU lab classifier defaults
+DL_MAX_LEN = 50
+DL_BATCH_SIZE = 64
+DL_LEARNING_RATE = 0.001
+DL_EPOCHS = 8
+DL_CPU_THREADS = 2
+DL_LABELS = ("bug", "enhancement", "documentation", "question")

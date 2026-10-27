@@ -4,25 +4,21 @@ gharchive-lakehouse: GH Archive -> clean Parquet -> DuckDB star schema -> Spark 
 ## Student environment
 OS: Windows  RAM: 16 GB  Python: 3.11 (in .venv)  Docker: Docker Desktop (SLIM mode configured)
 ## Current step
-College Practicals Alignment (Practicals 3, 4, 5, 6, 7) fully implemented in Streamlit Tab 3, README, and regenerated PDF report; pushed commit 7989e7f to https://github.com/harrypeter07/gharchive-lakehouse.
+Completed data deduplication (14,780 clean issues, zero split leakage), retrained PyTorch 1D-CNN with class-weighting, completed modular dark navy UI tabs, authored DL_LAB_GUIDE.md, and regenerated DEEP_LEARNING_LAB_REPORT.pdf (889 KB).
 ## Done and verified
 - P1.0 to P1.9: Medallion Lakehouse, zero silent drops (2.05M rows), DuckDB star schema, PySpark cross-engine reconciliation, IR & ML lab, Streamlit app, schema drift test, and master PDF guide.
-- P2.1 to P2.4: Docker stack (PostgreSQL, Airflow, Metabase) running locally, DuckDB to PostgreSQL sync (2.05M rows), Airflow DAG active, 23 integration tests.
-- GitHub Push & Railway Auto-Deploy:
-  - Repository: `https://github.com/harrypeter07/gharchive-lakehouse`.
-  - Pushed commit `7989e7f` (`feat(dl): align deep learning tab with college practicals 3-6 and update lab report`).
-  - Branch up to date with `origin/main`.
-- Streamlit Execution Page (Tab 3):
-  - Fixed button click triggers using `st.session_state` and `st.rerun()`.
-  - Integrated 4 dedicated college practical studios:
-    - Practical 6: Exact 2D matrix convolution ($X \in 4\times 4, K \in 3\times 3 \implies FM \in 2\times 2$, Stride 1, Padding 0, Flattening, Dense layer, Sigmoid).
-    - Practical 4: Study of 6 Optimizers (Vanilla GD, Momentum, NAG, Adagrad, RMSProp, Adam) + Batching strategies with interactive loss curves.
-    - Practical 5: Study of Regularizers (L1, L2, Dropout, Early Stopping) with overfitting prevention curves.
-    - Practical 3: Feedforward Neural Network architecture with ReLU and Softmax.
-  - Live side-by-side execution: Multinomial Naive Bayes + PyTorch 1D-CNN.
-  - Verified with real in-memory load test: 8,000 index docs, 22,415 vocab, CNN active.
+- P2.1 to P2.4: Docker stack (PostgreSQL, Airflow, Metabase) running locally, DuckDB to PostgreSQL sync (2.05M rows), Airflow DAG active, 27 integration tests.
+- Data Audit & Model Retraining:
+  - Deduplicated repeated issues (551 duplicates removed); 14,780 clean records split into train (11,823), val (1,478), test (1,479) with zero token sequence overlap.
+  - Re-trained 1D-CNN: 1,297,412 parameters, 20,075 vocab size, test accuracy 77.15%, Macro-F1 62.34%.
+  - Real metrics saved to `data/curated/dl_report.json` with zero fabricated numbers.
+- Streamlit Modular UI:
+  - Compact navy theme (`.streamlit/config.toml`), cyan charts, and modular tab files (`src/app/tabs/`).
+  - Native "Lab guide" tab backed by comprehensive `docs/DL_LAB_GUIDE.md`.
+  - Live tensor diagnostics (`[1, 50]` -> `[1, 64, 50]` -> `[1, 64]` -> 4 probabilities) with word ID inspection.
 - Academic PDF Report:
-  - Authored and compiled `docs/DEEP_LEARNING_LAB_REPORT.pdf` (877 KB) including the RCOEM CSE college practicals section, and copied to `C:\Users\ASUS\Downloads\DEEP_LEARNING_LAB_REPORT.pdf`.
+  - Freshly updated [C:\Users\ASUS\Downloads\DEEP_LEARNING_LAB_REPORT.pdf](file:///C:/Users/ASUS/Downloads/DEEP_LEARNING_LAB_REPORT.pdf) (889 KB) with Child-Friendly "Explain Like I'm 10" section and honest per-class evaluation.
+- Test Suite: 27 passed, 3 skipped in 36s.
 ## Broken / blocked
 (nothing)
 ## Commands that work
