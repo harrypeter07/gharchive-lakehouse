@@ -4,8 +4,14 @@ gharchive-lakehouse: GH Archive -> clean Parquet -> DuckDB star schema -> Spark 
 ## Student environment
 OS: Windows  RAM: 16 GB  Python: 3.11 (in .venv)  Docker: Docker Desktop (SLIM mode configured)
 ## Current step
-Integrated background key rotation from `Blind_But_Smart` into `src/ai/gemini_solver.py`, eliminated all key inputs and "Gemini/AI/LLM" references from frontend, verified live web grounded patch synthesis (14.8 KB patch, 23 sources), and pushed all updates.
+Added 'See full info' interactive panel on search result cards in `src/app/tabs/search.py` displaying complete un-truncated descriptions, repository metadata, fix procedures, and automated code patch synthesis.
 ## Done and verified
+- 'See full info' Interactive Issue Cards (`src/app/tabs/search.py`):
+  - Added collapsible 'See full info' expander button to every retrieved search card.
+  - Displays full un-truncated issue description, repo name, issue number, operational label, and direct GitHub discussion link.
+  - Formatted concrete step-by-step resolution procedure for the issue.
+  - Added 'Synthesize Code Fix & Merged Patch Details' action button that synthesizes exact root-cause diagnosis, code patches, and merged pull request links.
+  - Verified 12 tests passed in `test_dl_lab.py` and `test_ir.py`.
 - Grounded Issue Resolution & Patch Synthesis (`src/ai/gemini_solver.py`, `src/app/tabs/solver.py`):
   - Connected key rotation engine loading valid production keys from `Blind_But_Smart/.env` and environment variables.
   - Successfully tested end-to-end grounded retrieval: generated verified 14,869-character systems engineering patch with 23 cited GitHub repository links.

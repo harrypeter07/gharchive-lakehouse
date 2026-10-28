@@ -6,6 +6,7 @@ import streamlit as st
 from src.ir.bm25 import BM25Ranker
 from src.ir.lm import LanguageModelRanker
 from src.ir.index import tokenize
+from src.ai.gemini_solver import query_solution_with_search
 
 
 TRIAGE_GUIDANCE = {
@@ -148,7 +149,7 @@ def render(index, nb_model, all_records) -> None:
             github_link_html = f"<a href='{github_url}' target='_blank' style='color: #60a5fa; text-decoration: none;'>View on GitHub ↗</a>" if github_url else ""
 
             st.markdown(f"""
-            <div style="background-color: #142139; border: 1px solid #293a56; border-radius: 8px; padding: 14px; margin-bottom: 12px;">
+            <div style="background-color: #142139; border: 1px solid #293a56; border-radius: 8px; padding: 14px; margin-bottom: 8px;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
                     <div>
                         <span style="font-weight: 700; font-size: 11pt; color: #e8f0ff;">#{rank}. {escape(str(title))}</span>
@@ -175,6 +176,61 @@ def render(index, nb_model, all_records) -> None:
                 </div>
             </div>
             """, unsafe_allow_html=True)
+
+            # "See full info" expander button
+            with st.expander(f"See full info — #{rank}. {str(title)[:65]}...", expanded=False):
+                st.markdown("##### Full Issue Description")
+                if body and body.strip():
+                    st.markdown(body)
+                else:
+                    st.info("No extended description was provided in this ticket.")
+
+                st.markdown("---")
+                st.markdown("##### Fixes Applied & Resolution Guidance")
+
+                col_meta1, col_meta2 = st.columns([1, 1])
+                with col_meta1:
+                    st.markdown(f"**Repository:** `{repo_name}`")
+                    st.markdown(f"**Issue Number:** `#{issue_num}`")
+                    st.markdown(f"**Operational Label:** `{lbl}`")
+                with col_meta2:
+                    if github_url:
+                        st.markdown(f"**Official GitHub Discussion:** [{repo_name}#{issue_num}]({github_url})")
+                    st.markdown(f"**Ranking Relevance:** `{score:.3f}`")
+
+                # Automated resolution button
+                btn_key = f"synthesize_fix_{doc_id}_{rank}"
+                if st.button("Synthesize Code Fix & Merged Patch Details", key=btn_key):
+                    with st.spinner("Searching repository commits and synthesizing resolution..."):
+                        fix_res = query_solution_with_search(title, body[:500])
+                        st.session_state[f"fix_cache_{doc_id}"] = fix_res
+
+                cached_fix = st.session_state.get(f"fix_cache_{doc_id}")
+                if cached_fix:
+                    if cached_fix.get("success"):
+                        st.success("Verified Patch & Resolution Discovered")
+                        st.markdown(cached_fix.get("text", ""))
+                        sources = cached_fix.get("sources", [])
+                        if sources:
+                            st.markdown("**Referenced Commits & PRs:**")
+                            for s in sources[:6]:
+                                st.markdown(f"- [{s['title']}]({s['url']})")
+                    else:
+                        st.warning(f"Resolution retrieval note: {cached_fix.get('error')}")
+                else:
+                    st.markdown(f"""
+                    <div style="background: #0c1626; padding: 12px; border-radius: 6px; border: 1px solid #1f2e46; margin-top: 6px;">
+                        <b style="color: #38bdf8;">Recommended Resolution Procedure:</b>
+                        <ul style="margin: 6px 0; padding-left: 20px; color: #cbd5e1; font-size: 8.5pt;">
+                            <li><b>Step 1:</b> Inspect git commit history on <code>{escape(str(repo_name))}</code> around issue #{issue_num} to review merged pull requests.</li>
+                            <li><b>Step 2:</b> Verify local reproduction behavior using the steps above.</li>
+                            <li><b>Step 3:</b> Apply triage guidance: {guidance}</li>
+                            <li><b>Step 4:</b> Click <i>'Synthesize Code Fix & Merged Patch Details'</i> above to generate an automated patch with linked repository commits.</li>
+                        </ul>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+            st.write("")
 
     if index is None:
         st.warning("Search data is missing. Restore the curated splits to enable search.")
