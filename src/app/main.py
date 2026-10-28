@@ -17,7 +17,7 @@ apply_theme()
 st.markdown('''<div class="masthead"><div><div class="eyebrow">GH ARCHIVE / ANALYTICS LAB</div>
 <h1>From GitHub activity to issue intelligence</h1>
 <p>Hassan · Lakehouse analytics & a focused deep learning demonstration</p></div></div>''', unsafe_allow_html=True)
-section = st.radio('Workspace', ['Overview', 'Issue search', 'Deep learning', 'Archive download', 'About me'],
+section = st.radio('Workspace', ['Overview', 'Issue search', 'Search categories', 'Archive download', 'About me'],
                    horizontal=True, label_visibility='collapsed')
 try:
     if section == 'Overview':
@@ -25,7 +25,7 @@ try:
         analytics.render(db if db.exists() else CURATED_DATA_DIR/'demo_lakehouse.duckdb')
     elif section == 'Issue search':
         search.render(*load_ir_and_nb_models())
-    elif section == 'Deep learning':
+    elif section == 'Search categories':
         deep_learning.render()
     elif section == 'Archive download':
         live.render()

@@ -4,8 +4,11 @@ gharchive-lakehouse: GH Archive -> clean Parquet -> DuckDB star schema -> Spark 
 ## Student environment
 OS: Windows  RAM: 16 GB  Python: 3.11 (in .venv)  Docker: Docker Desktop (SLIM mode configured)
 ## Current step
-Revamped 'About me' documentation (`docs/DL_LAB_GUIDE.md`) to be diagrammatic, concise, and structured point-to-point without emojis; all 27 tests passing.
+Renamed DL navigation link to 'Search categories' in `src/app/main.py` and `tests/test_dl_lab.py`; verified test suite passes; detailed IR practical implementation and algorithms.
 ## Done and verified
+- Navigation Link Update:
+  - Renamed 'Deep learning' tab to 'Search categories' in `src/app/main.py`.
+  - Updated test assertion in `tests/test_dl_lab.py` (5 passed).
 - P1.0 to P1.9: Medallion Lakehouse, zero silent drops (2.05M rows), DuckDB star schema, PySpark cross-engine reconciliation, IR & ML lab, Streamlit app, schema drift test, and master PDF guide.
 - P2.1 to P2.4: Docker stack (PostgreSQL, Airflow, Metabase) running locally, DuckDB to PostgreSQL sync (2.05M rows), Airflow DAG active, 27 integration tests.
 - Diagrammatic, Point-to-Point Architecture Documentation ('About me'):
