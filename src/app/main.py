@@ -16,7 +16,7 @@ st.set_page_config(page_title="GH Archive | Neural Analytics", page_icon="◈", 
 apply_theme()
 st.markdown('''<div class="masthead"><div><div class="eyebrow">GH ARCHIVE / ANALYTICS LAB</div>
 <h1>From GitHub activity to issue intelligence</h1>
-<p>Hassan · Lakehouse analytics & information retrieval laboratory</p></div></div>''', unsafe_allow_html=True)
+<p>Lakehouse analytics & information retrieval laboratory</p></div></div>''', unsafe_allow_html=True)
 section = st.radio('Workspace', ['Overview', 'Issue search', 'Search categories', 'Issue solver', 'Archive download', 'About me'],
                    horizontal=True, label_visibility='collapsed')
 try:

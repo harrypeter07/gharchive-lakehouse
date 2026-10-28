@@ -1,7 +1,6 @@
 # Information Retrieval & Probabilistic Text Intelligence Engine
 ## Academic Practical Specification & System Architecture
 
-**Author:** Hassan  
 **Affiliation:** Department of Computer Science and Engineering, Shri Ramdeobaba College of Engineering and Management (RCOEM)  
 **System Repository:** https://github.com/harrypeter07/gharchive-lakehouse  
 **Live Production Host:** https://gharchive.up.railway.app  

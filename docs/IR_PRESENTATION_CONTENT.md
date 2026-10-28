@@ -1,7 +1,6 @@
 # Information Retrieval (IR) & Text Intelligence Engine
 ## Presentation Deck Specification (Slide-by-Slide Content & Speaker Script)
 
-**Author:** Hassan  
 **Affiliation:** Department of Computer Science & Engineering, Shri Ramdeobaba College of Engineering and Management (RCOEM)  
 **Live System:** https://gharchive.up.railway.app  
 **Repository:** https://github.com/harrypeter07/gharchive-lakehouse  
@@ -11,7 +10,7 @@
 ### Slide 1: Title & Executive Overview
 - **Header:** Automated Defect Retrieval & Text Classification on GitHub Archive
 - **Subheader:** Probabilistic Search (BM25), Statistical Language Models (Dirichlet), and Bayesian Text Classification
-- **Presenter:** Hassan | B.Tech CSE, RCOEM
+- **Presenter:** Department of Computer Science & Engineering, RCOEM
 - **Visual / Layout:** Two-column split. Left: High-throughput software lakehouse diagram (Medallion Bronze -> Silver -> Gold). Right: Three core IR practical pillars.
 - **Key Bullet Points:**
   - Ingests streaming public GitHub event archives into an analytical lakehouse (14,780 curated issues, 57,306 terms).
