@@ -4,8 +4,12 @@ gharchive-lakehouse: GH Archive -> clean Parquet -> DuckDB star schema -> Spark 
 ## Student environment
 OS: Windows  RAM: 16 GB  Python: 3.11 (in .venv)  Docker: Docker Desktop (SLIM mode configured)
 ## Current step
-Integrated academic IR specification in 'About me' (`docs/DL_LAB_GUIDE.md`), upgraded BM25 with query coordination matching, indexed all 14,780 issues, and added AI Issue Solver with Gemini Google Search Grounding; all 27 tests passing.
+Generated complete slide-by-slide Information Retrieval (IR) presentation deck specification and speaker scripts in `docs/IR_PRESENTATION_CONTENT.md`.
 ## Done and verified
+- IR Presentation Content & Defense Deck (`docs/IR_PRESENTATION_CONTENT.md`):
+  - Formulated 8 detailed slides designed for Google Slides / PowerPoint / AI presentation generators.
+  - Aligned with the 3 college practicals: BM25, Dirichlet Language Model, and Multinomial Naive Bayes.
+  - Included slide titles, visual layout blueprints, mathematical formulas, empirical benchmark tables, plain-English speaker scripts, and technical examination defense Q&A.
 - Information Retrieval (IR) Academic Specification ('About me'):
   - Replaced documentation with comprehensive IR specification covering the three college lab practicals:
     1. Probabilistic IR using BM25 Ranking (`src/ir/bm25.py`).
