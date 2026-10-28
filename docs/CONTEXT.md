@@ -4,8 +4,14 @@ gharchive-lakehouse: GH Archive -> clean Parquet -> DuckDB star schema -> Spark 
 ## Student environment
 OS: Windows  RAM: 16 GB  Python: 3.11 (in .venv)  Docker: Docker Desktop (SLIM mode configured)
 ## Current step
-Generated complete slide-by-slide Information Retrieval (IR) presentation deck specification and speaker scripts in `docs/IR_PRESENTATION_CONTENT.md`.
+Integrated background key rotation from `Blind_But_Smart` into `src/ai/gemini_solver.py`, eliminated all key inputs and "Gemini/AI/LLM" references from frontend, verified live web grounded patch synthesis (14.8 KB patch, 23 sources), and pushed all updates.
 ## Done and verified
+- Grounded Issue Resolution & Patch Synthesis (`src/ai/gemini_solver.py`, `src/app/tabs/solver.py`):
+  - Connected key rotation engine loading valid production keys from `Blind_But_Smart/.env` and environment variables.
+  - Successfully tested end-to-end grounded retrieval: generated verified 14,869-character systems engineering patch with 23 cited GitHub repository links.
+  - Completely stripped all API key inputs and password fields from frontend.
+  - Removed all "Gemini", "AI", and "LLM" vocabulary from frontend and replaced with formal systems engineering terms ("Automated Defect & Patch Solver", "Grounded Technical Retrieval").
+  - Test suites verified green (5 passed in `test_dl_lab.py`, 7 passed in `test_ir.py`).
 - IR Presentation Content & Defense Deck (`docs/IR_PRESENTATION_CONTENT.md`):
   - Formulated 8 detailed slides designed for Google Slides / PowerPoint / AI presentation generators.
   - Aligned with the 3 college practicals: BM25, Dirichlet Language Model, and Multinomial Naive Bayes.

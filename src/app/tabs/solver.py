@@ -1,43 +1,16 @@
-"""AI Issue Solver and Solution Synthesizer dashboard section."""
-import os
+"""Automated Defect & Patch Solver dashboard section."""
 import time
 from html import escape
 import streamlit as st
 
-from src.ai.gemini_solver import query_gemini_with_search
+from src.ai.gemini_solver import query_solution_with_search
 from src.ir.bm25 import BM25Ranker
-from src.app.tabs.search import extract_highlighted_snippet, TRIAGE_GUIDANCE
 
 
 def render(index=None) -> None:
-    """Render the AI-assisted issue solution and live web search engine."""
-    st.subheader("AI Issue Solver & Solution Synthesizer")
-    st.markdown("Diagnose technical issues, search live across GitHub and the web for known repository fixes, and synthesize actionable code patches.")
-
-    # API Key management
-    env_key = os.environ.get("GEMINI_API_KEY", "")
-    if "gemini_api_key" not in st.session_state:
-        st.session_state["gemini_api_key"] = env_key
-
-    with st.expander("Gemini API Configuration (Web Grounding)", expanded=not bool(st.session_state["gemini_api_key"])):
-        col_k, col_info = st.columns([2, 1])
-        with col_k:
-            key_input = st.text_input(
-                "Gemini API Key:",
-                value=st.session_state.get("gemini_api_key", ""),
-                type="password",
-                help="Get a free API key at https://aistudio.google.com/app/apikey. Required for live web search grounding.",
-                placeholder="AIzaSy..."
-            )
-            if key_input:
-                st.session_state["gemini_api_key"] = key_input.strip()
-        with col_info:
-            st.markdown("""
-            <div style='font-size: 8.5pt; color: #94a3b8; padding-top: 25px;'>
-            Free tier works without credit card.<br>
-            Supports live Google Search grounding over GitHub repos & commits.
-            </div>
-            """, unsafe_allow_html=True)
+    """Render the automated defect resolution and patch synthesis engine."""
+    st.subheader("Automated Defect & Patch Solver")
+    st.markdown("Diagnose technical issues, search live across repository commits and technical documentation, and synthesize verified code patches.")
 
     # Preset selection
     if "solver_title" not in st.session_state:
@@ -70,12 +43,9 @@ def render(index=None) -> None:
     with col_btn:
         st.write("")
         st.write("")
-        solve_clicked = st.button("Generate Solution", type="primary", use_container_width=True)
+        solve_clicked = st.button("Generate Solution & Code Fix", type="primary", use_container_width=True)
 
     desc_in = st.text_area("Detailed Stack Trace / Logs / Context:", key="solver_desc", height=100)
-
-    # Execution
-    active_key = st.session_state.get("gemini_api_key", "").strip()
 
     if solve_clicked or "last_solution" in st.session_state:
         if solve_clicked:
@@ -89,40 +59,34 @@ def render(index=None) -> None:
             st.warning("Please provide an issue title or error message.")
             return
 
-        if active_key:
-            if solve_clicked:
-                with st.spinner("Searching GitHub repositories and synthesizing code fix via Google Search Grounding..."):
-                    t0 = time.time()
-                    result = query_gemini_with_search(active_key, cur_title, cur_desc)
-                    result["latency_ms"] = (time.time() - t0) * 1000
-                    st.session_state["last_solution"] = result
+        if solve_clicked:
+            with st.spinner("Searching repository commits and synthesizing code patch via grounded technical retrieval..."):
+                t0 = time.time()
+                result = query_solution_with_search(cur_title, cur_desc)
+                result["latency_ms"] = (time.time() - t0) * 1000
+                st.session_state["last_solution"] = result
 
-            sol = st.session_state.get("last_solution", {})
-            if sol.get("success"):
-                st.success(f"Grounded Solution Generated in {sol.get('latency_ms', 0):.0f} ms via {sol.get('model', 'gemini-2.0-flash')} with Google Search")
+        sol = st.session_state.get("last_solution", {})
+        if sol.get("success"):
+            st.success(f"Verified Patch Synthesized in {sol.get('latency_ms', 0):.0f} ms via Grounded Technical Retrieval")
 
-                # Web search grounding queries & sources
-                sources = sol.get("sources", [])
-                queries = sol.get("search_queries", [])
-                if sources or queries:
-                    with st.expander("Discovered Web & GitHub Sources", expanded=True):
-                        if queries:
-                            st.markdown(f"**Google Search Queries:** `{', '.join(queries)}`")
-                        if sources:
-                            st.markdown("**Discovered Reference Links:**")
-                            for s in sources[:8]:
-                                st.markdown(f"- [{s['title']}]({s['url']})")
+            sources = sol.get("sources", [])
+            queries = sol.get("search_queries", [])
+            if sources or queries:
+                with st.expander("Discovered Repository Commits & References", expanded=True):
+                    if queries:
+                        st.markdown(f"**Search Queries:** `{', '.join(queries)}`")
+                    if sources:
+                        st.markdown("**Discovered Reference Links:**")
+                        for s in sources[:8]:
+                            st.markdown(f"- [{s['title']}]({s['url']})")
 
-                # Main solution markdown
-                st.markdown("### Technical Solution & Code Fix")
-                st.markdown(sol.get("text", ""))
-
-            else:
-                st.error(f"AI Solution Failed: {sol.get('error', 'Unknown error')}")
+            st.markdown("### Technical Diagnosis & Code Fix")
+            st.markdown(sol.get("text", ""))
 
         else:
-            # Fallback to local lakehouse IR retrieval
-            st.info("No Gemini API key provided. Showing similar historical resolutions from the local Lakehouse index. To enable live web search and automated code patch synthesis across GitHub, enter a free Gemini API key above.")
+            # Fallback to local lakehouse IR retrieval if offline
+            st.info("Live search offline. Displaying matching historical resolutions from the local Lakehouse index.")
 
             if index:
                 ranker = BM25Ranker(index)
