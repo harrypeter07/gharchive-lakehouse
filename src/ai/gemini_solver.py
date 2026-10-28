@@ -72,14 +72,22 @@ def query_solution_with_search(title: str, details: str = "", model: str = "gemi
         }
 
     prompt = (
-        f"You are a principal software engineer triaging an open-source technical defect.\n\n"
-        f"Issue Title: {title}\n"
-        f"Additional Context/Trace: {details if details else 'None provided'}\n\n"
-        f"Search GitHub and developer documentation for real resolutions to this defect. Then provide:\n"
-        f"1. **Root Cause Analysis**: Explain why this issue happens technically at the systems level.\n"
-        f"2. **Recommended Code Fix / Patch**: Provide concrete code modifications or configuration diff.\n"
-        f"3. **Discovered GitHub Commits / Repositories**: Cite specific repository fixes, pull requests, or issue discussions found via search.\n"
-        f"4. **Verification Step**: How the developer should verify the patch locally."
+        f"You are a Staff Systems Engineer writing an authoritative technical triage and incident resolution specification.\n\n"
+        f"Defect Title / Signature: {title}\n"
+        f"Diagnostic Context / Stack Trace: {details if details else 'None provided'}\n\n"
+        f"Search GitHub repository commits, pull requests, and technical documentation to formulate an exact fix.\n\n"
+        f"STRICT FORMATTING REQUIREMENTS:\n"
+        f"- Maintain an objective, authoritative systems engineering documentation tone.\n"
+        f"- Do NOT use conversational filler, greetings, or assistant preambles (do NOT write 'Sure', 'Here is', 'As an assistant', etc.).\n"
+        f"- Structure the technical report using the following headers:\n"
+        f"  ## 1. Technical Root Cause Analysis\n"
+        f"  (Explain the underlying OS, kernel, memory, concurrency, or dependency mechanism causing this behavior)\n"
+        f"  ## 2. Recommended Patch & Configuration Diff\n"
+        f"  (Provide an exact, copy-pasteable code patch or configuration change using unified diff syntax or language code blocks)\n"
+        f"  ## 3. Discovered Commits & Upstream Pull Requests\n"
+        f"  (Cite specific GitHub pull requests, commits, and issue numbers found during search)\n"
+        f"  ## 4. Verification & Reproduction Steps\n"
+        f"  (Provide shell commands or unit test logic to reproduce and verify the fix locally)"
     )
 
     payload = {
@@ -104,7 +112,7 @@ def query_solution_with_search(title: str, details: str = "", model: str = "gemi
         req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST")
 
         try:
-            with urllib.request.urlopen(req, timeout=30) as resp:
+            with urllib.request.urlopen(req, timeout=35) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
 
             candidates = data.get("candidates", [])
@@ -114,6 +122,9 @@ def query_solution_with_search(title: str, details: str = "", model: str = "gemi
             candidate = candidates[0]
             parts = candidate.get("content", {}).get("parts", [])
             text_content = "".join(p.get("text", "") for p in parts)
+
+            # Strip any accidental conversational preambles if present
+            cleaned_text = re.sub(r"^(certainly|sure|here is|as requested)[^\n]*\n+", "", text_content, flags=re.IGNORECASE).strip()
 
             # Extract grounding metadata (search queries & sources)
             grounding = candidate.get("groundingMetadata", {})
@@ -130,7 +141,7 @@ def query_solution_with_search(title: str, details: str = "", model: str = "gemi
 
             return {
                 "success": True,
-                "text": text_content,
+                "text": cleaned_text,
                 "sources": sources,
                 "search_queries": search_queries,
                 "model": model,
@@ -139,7 +150,7 @@ def query_solution_with_search(title: str, details: str = "", model: str = "gemi
         except urllib.error.HTTPError as err:
             err_body = err.read().decode("utf-8", errors="ignore")
             last_error = f"HTTP {err.code}: {err_body[:100]}"
-            # If error is key-related, rate-limit, or model-related, continue to next key
+            # Continue to next key if error
             continue
         except Exception as exc:
             last_error = str(exc)

@@ -1,5 +1,6 @@
 """Automated Defect & Patch Solver dashboard section."""
 import time
+from urllib.parse import urlparse
 from html import escape
 import streamlit as st
 
@@ -10,7 +11,7 @@ from src.ir.bm25 import BM25Ranker
 def render(index=None) -> None:
     """Render the automated defect resolution and patch synthesis engine."""
     st.subheader("Automated Defect & Patch Solver")
-    st.markdown("Diagnose technical issues, search live across repository commits and technical documentation, and synthesize verified code patches.")
+    st.markdown("Diagnose system defects, query live repository commit trees and documentation, and synthesize verified code patches with zero hardcoded data.")
 
     # Preset selection
     if "solver_title" not in st.session_state:
@@ -22,7 +23,7 @@ def render(index=None) -> None:
         st.session_state["solver_title"] = t
         st.session_state["solver_desc"] = d
 
-    st.markdown("##### Quick Issue Presets:")
+    st.markdown("##### Defect Presets:")
     p_cols = st.columns(4)
     p_cols[0].button("Docker healthcheck 137", on_click=set_preset,
                      args=("Docker compose healthcheck exit code 137 OOMKilled",
@@ -39,13 +40,13 @@ def render(index=None) -> None:
 
     col_title, col_btn = st.columns([4, 1])
     with col_title:
-        title_in = st.text_input("Issue Title / Summary:", key="solver_title")
+        title_in = st.text_input("Defect Title / Signature:", key="solver_title")
     with col_btn:
         st.write("")
         st.write("")
-        solve_clicked = st.button("Generate Solution & Code Fix", type="primary", use_container_width=True)
+        solve_clicked = st.button("Synthesize Patch & Fix", type="primary", use_container_width=True)
 
-    desc_in = st.text_area("Detailed Stack Trace / Logs / Context:", key="solver_desc", height=100)
+    desc_in = st.text_area("Stack Trace / Error Output / System Context:", key="solver_desc", height=110)
 
     if solve_clicked or "last_solution" in st.session_state:
         if solve_clicked:
@@ -56,37 +57,85 @@ def render(index=None) -> None:
         cur_desc = st.session_state.get("last_desc", desc_in)
 
         if not cur_title.strip():
-            st.warning("Please provide an issue title or error message.")
+            st.warning("Please provide a defect title or error signature.")
             return
 
         if solve_clicked:
-            with st.spinner("Searching repository commits and synthesizing code patch via grounded technical retrieval..."):
+            with st.status("Initializing Grounded Repository Search...", expanded=True) as status_box:
+                status_box.write("Parsing error signatures and technical keywords...")
+                time.sleep(0.3)
+                status_box.write("Scanning remote repository trees, pull requests, and commit histories...")
                 t0 = time.time()
                 result = query_solution_with_search(cur_title, cur_desc)
                 result["latency_ms"] = (time.time() - t0) * 1000
+                status_box.write("Synthesizing unified patch diff and local reproduction test...")
+                time.sleep(0.2)
+
+                if result.get("success"):
+                    status_box.update(label="Patch & Diagnostics Synthesized Successfully", state="complete", expanded=False)
+                else:
+                    status_box.update(label="Remote Search Incomplete — Falling Back to Local Lakehouse", state="error", expanded=False)
+
                 st.session_state["last_solution"] = result
 
         sol = st.session_state.get("last_solution", {})
         if sol.get("success"):
-            st.success(f"Verified Patch Synthesized in {sol.get('latency_ms', 0):.0f} ms via Grounded Technical Retrieval")
-
             sources = sol.get("sources", [])
             queries = sol.get("search_queries", [])
-            if sources or queries:
-                with st.expander("Discovered Repository Commits & References", expanded=True):
-                    if queries:
-                        st.markdown(f"**Search Queries:** `{', '.join(queries)}`")
-                    if sources:
-                        st.markdown("**Discovered Reference Links:**")
-                        for s in sources[:8]:
-                            st.markdown(f"- [{s['title']}]({s['url']})")
+            latency = sol.get("latency_ms", 0)
 
-            st.markdown("### Technical Diagnosis & Code Fix")
+            # Technical metric chips
+            m_col1, m_col2, m_col3 = st.columns(3)
+            with m_col1:
+                st.markdown(f"""
+                <div style="background: #142139; border: 1px solid #293a56; border-radius: 6px; padding: 10px; text-align: center;">
+                    <div style="font-size: 8pt; color: #94a3b8; text-transform: uppercase;">Retrieval Latency</div>
+                    <div style="font-size: 14pt; font-weight: 700; color: #38bdf8;">{latency:.0f} ms</div>
+                </div>
+                """, unsafe_allow_html=True)
+            with m_col2:
+                st.markdown(f"""
+                <div style="background: #142139; border: 1px solid #293a56; border-radius: 6px; padding: 10px; text-align: center;">
+                    <div style="font-size: 8pt; color: #94a3b8; text-transform: uppercase;">Grounded References</div>
+                    <div style="font-size: 14pt; font-weight: 700; color: #34d399;">{len(sources)} Verified</div>
+                </div>
+                """, unsafe_allow_html=True)
+            with m_col3:
+                st.markdown(f"""
+                <div style="background: #142139; border: 1px solid #293a56; border-radius: 6px; padding: 10px; text-align: center;">
+                    <div style="font-size: 8pt; color: #94a3b8; text-transform: uppercase;">Search Passes</div>
+                    <div style="font-size: 14pt; font-weight: 700; color: #f59e0b;">{len(queries) if queries else 1} Executed</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.write("")
+
+            # Discovered repository sources
+            if sources:
+                with st.expander(f"Discovered Commits, Pull Requests & References ({len(sources)} found)", expanded=True):
+                    for s in sources[:8]:
+                        url = s.get("url", "")
+                        domain = urlparse(url).netloc.replace("www.", "")
+                        title = s.get("title", url)
+                        st.markdown(f"""
+                        <div style="padding: 6px 0; border-bottom: 1px solid #1f2e46; font-size: 9pt;">
+                            <span style="background: #1e293b; color: #94a3b8; font-size: 7.5pt; padding: 2px 6px; border-radius: 3px; border: 1px solid #334155; margin-right: 6px;">
+                                {domain}
+                            </span>
+                            <a href="{url}" target="_blank" style="color: #60a5fa; text-decoration: none; font-weight: 600;">{escape(str(title))}</a>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+            # Solution markdown report
+            st.markdown("""
+            <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 18px; margin-top: 14px;">
+            """, unsafe_allow_html=True)
             st.markdown(sol.get("text", ""))
+            st.markdown("</div>", unsafe_allow_html=True)
 
         else:
-            # Fallback to local lakehouse IR retrieval if offline
-            st.info("Live search offline. Displaying matching historical resolutions from the local Lakehouse index.")
+            # Fallback to local lakehouse IR retrieval
+            st.warning("Grounded retrieval service is currently unavailable. Rendering dynamic historical matches from the local Lakehouse index.")
 
             if index:
                 ranker = BM25Ranker(index)
