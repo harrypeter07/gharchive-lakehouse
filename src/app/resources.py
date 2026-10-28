@@ -43,7 +43,7 @@ def load_ir_and_nb_models():
     train_records = [r for r in records if r["split"] == "train"]
 
     index = InvertedIndex()
-    for d in train_records[:8000]:
+    for d in records:
         index.add_document(d["event_id"], f"{d['title']} {d['body']}", metadata=d)
     index.finalize()
 
@@ -51,4 +51,3 @@ def load_ir_and_nb_models():
     nb.fit([f"{d['title']} {d['body']}" for d in train_records], [d["label"] for d in train_records])
 
     return index, nb, records
-

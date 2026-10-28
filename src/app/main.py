@@ -9,15 +9,15 @@ if str(ROOT) not in sys.path:
 import streamlit as st
 from src.app.theme import apply_theme
 from src.app.resources import load_ir_and_nb_models
-from src.app.tabs import analytics, search, deep_learning, live, guide
+from src.app.tabs import analytics, search, deep_learning, solver, live, guide
 from src.common.config import PROJECT_ROOT, CURATED_DATA_DIR
 
 st.set_page_config(page_title="GH Archive | Neural Analytics", page_icon="◈", layout="wide")
 apply_theme()
 st.markdown('''<div class="masthead"><div><div class="eyebrow">GH ARCHIVE / ANALYTICS LAB</div>
 <h1>From GitHub activity to issue intelligence</h1>
-<p>Hassan · Lakehouse analytics & a focused deep learning demonstration</p></div></div>''', unsafe_allow_html=True)
-section = st.radio('Workspace', ['Overview', 'Issue search', 'Search categories', 'Archive download', 'About me'],
+<p>Hassan · Lakehouse analytics & information retrieval laboratory</p></div></div>''', unsafe_allow_html=True)
+section = st.radio('Workspace', ['Overview', 'Issue search', 'Search categories', 'Issue solver', 'Archive download', 'About me'],
                    horizontal=True, label_visibility='collapsed')
 try:
     if section == 'Overview':
@@ -27,6 +27,9 @@ try:
         search.render(*load_ir_and_nb_models())
     elif section == 'Search categories':
         deep_learning.render()
+    elif section == 'Issue solver':
+        index, nb, records = load_ir_and_nb_models()
+        solver.render(index)
     elif section == 'Archive download':
         live.render()
     else:

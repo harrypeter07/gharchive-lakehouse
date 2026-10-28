@@ -4,8 +4,25 @@ gharchive-lakehouse: GH Archive -> clean Parquet -> DuckDB star schema -> Spark 
 ## Student environment
 OS: Windows  RAM: 16 GB  Python: 3.11 (in .venv)  Docker: Docker Desktop (SLIM mode configured)
 ## Current step
-Renamed DL navigation link to 'Search categories' in `src/app/main.py` and `tests/test_dl_lab.py`; verified test suite passes; detailed IR practical implementation and algorithms.
+Integrated academic IR specification in 'About me' (`docs/DL_LAB_GUIDE.md`), upgraded BM25 with query coordination matching, indexed all 14,780 issues, and added AI Issue Solver with Gemini Google Search Grounding; all 27 tests passing.
 ## Done and verified
+- Information Retrieval (IR) Academic Specification ('About me'):
+  - Replaced documentation with comprehensive IR specification covering the three college lab practicals:
+    1. Probabilistic IR using BM25 Ranking (`src/ir/bm25.py`).
+    2. Language Model-based IR using Unigram Language Model with Dirichlet ($\mu=2000.0$) and Jelinek-Mercer ($\lambda=0.7$) smoothing (`src/ir/lm.py`).
+    3. Supervised text classification using Multinomial Naive Bayes with Laplace smoothing ($\alpha=1.0$) across 4 classes (`src/ir/naive_bayes.py`).
+  - Added ASCII dataflow diagrams, mathematical formulations, and empirical benchmark tables (14,780 issues, 57,306 vocabulary terms, 75.94% NB accuracy).
+- High-Precision IR Search Improvements:
+  - Indexed all 14,780 lakehouse issues in `src/app/resources.py` (previously capped at 8,000).
+  - Implemented Query Coordination Matching in `src/ir/bm25.py` and `src/ir/lm.py` so multi-term queries reward documents matching a higher percentage of terms.
+  - Added match percentage badges (e.g. `100% Term Match (3/3)`), matched keywords, context window snippet extraction with cyan keyword highlights, and maintainer triage advice.
+  - Added precision threshold filters and category dropdowns in `src/app/tabs/search.py`.
+- AI Issue Solver & Live Web Search Grounding (`src/app/tabs/solver.py`, `src/ai/gemini_solver.py`):
+  - Built AI solver module calling Google Gemini with Google Search Grounding to search live web/GitHub for repositories, commits, and PRs.
+  - Synthesizes root-cause analysis, code patches/diffs, and lists clickable reference sources.
+  - Added fallback to local Lakehouse BM25 retrieval when running without API key.
+  - Added 'Issue solver' navlink in `src/app/main.py`.
+  - Verified 100% test suite passing (27 passed, 3 skipped).
 - Navigation Link Update:
   - Renamed 'Deep learning' tab to 'Search categories' in `src/app/main.py`.
   - Updated test assertion in `tests/test_dl_lab.py` (5 passed).
